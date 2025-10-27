@@ -1,0 +1,12 @@
+package com.soict.CodeArena.model;
+
+public enum SUBMISSION_STATUS {
+    PENDING,
+    RUNNING,
+    ACCEPTED,
+    WRONG_ANSWER,
+    TIME_LIMIT_EXCEEDED,
+    MEMORY_LIMIT_EXCEEDED,
+    RUNTIME_ERROR,
+    COMPILATION_ERROR
+}

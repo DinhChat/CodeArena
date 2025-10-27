@@ -16,20 +16,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter)
+            throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/home").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/api/problems").hasAuthority("ADMIN")
+                        // Problem endpoints - ADMIN can create/update/delete, all authenticated users
+                        // can view
+                        .requestMatchers("/api/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
+                        // Testcase endpoints - Only ADMIN can manage testcases
+                        .requestMatchers("/api/testcases/**").hasAnyAuthority("ADMIN", "MANAGER")
+                        // Submission endpoints - All authenticated users can submit
+                        .requestMatchers("/api/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
                         .requestMatchers("/api/admins").hasAuthority("MANAGER")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
