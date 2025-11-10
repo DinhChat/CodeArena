@@ -1,8 +1,14 @@
 package com.soict.CodeArena.repository;
 
+import com.soict.CodeArena.model.USER_ROLE;
 import com.soict.CodeArena.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User,Long> {
     User findByUsername(String username);
+    List<User> findAllByRole(USER_ROLE role);
+    User findUserByUid(Long uid);
 }

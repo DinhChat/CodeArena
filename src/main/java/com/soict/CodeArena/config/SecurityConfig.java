@@ -30,6 +30,7 @@ public class SecurityConfig {
                         // Submission endpoints - All authenticated users can submit
                         .requestMatchers("/api/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
                         .requestMatchers("/api/admins").hasAuthority("MANAGER")
+                        .requestMatchers("/manager/**").hasAnyAuthority("MANAGER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
