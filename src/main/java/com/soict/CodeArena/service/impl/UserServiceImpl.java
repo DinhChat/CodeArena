@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserManagerResponse deleteUserById(Long uid) throws Exception {
-        User user = userRepository.findUserByUid(uid);
+        User user = userRepository.findUserByUserId(uid);
         if (user == null) {
             throw new Exception("User not found");
         }

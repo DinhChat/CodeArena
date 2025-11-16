@@ -66,7 +66,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     @Override
     public List<SubmissionResponse> getSubmissionsByUser(String username) throws Exception {
         User user = userService.findByUsername(username);
-        return submissionRepository.findByUser_UidOrderBySubmittedAtDesc(user.getUserId()).stream()
+        return submissionRepository.findByCreatedBy_UserIdOrderBySubmittedAtDesc(user.getUserId()).stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
@@ -81,7 +81,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     @Override
     public List<SubmissionResponse> getSubmissionsByUserAndProblem(String username, Long problemId) throws Exception {
         User user = userService.findByUsername(username);
-        return submissionRepository.findByUser_UidAndProblem_ProblemIdOrderBySubmittedAtDesc(user.getUserId(), problemId)
+        return submissionRepository.findByCreatedBy_UserIdAndProblem_ProblemIdOrderBySubmittedAtDesc(user.getUserId(), problemId)
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());

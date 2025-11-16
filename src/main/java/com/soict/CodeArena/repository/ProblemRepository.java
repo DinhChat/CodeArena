@@ -14,5 +14,4 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
 
     List<Problem> findByIsActive(boolean isActive);
 
-    List<Problem> findByCreatedBy_Uid(Long userId);
 }
