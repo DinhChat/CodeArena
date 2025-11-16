@@ -8,7 +8,6 @@ import com.soict.CodeArena.request.SubmissionRequest;
 import com.soict.CodeArena.response.SubmissionResponse;
 import com.soict.CodeArena.service.SubmissionService;
 import com.soict.CodeArena.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,28 +16,32 @@ import java.util.stream.Collectors;
 
 @Service
 public class SubmissionServiceImpl implements SubmissionService {
+    private final SubmissionRepository submissionRepository;
+    private final ProblemRepository problemRepository;
+    private final TestcaseRepository testcaseRepository;
+    private final UserService userService;
 
-    @Autowired
-    private SubmissionRepository submissionRepository;
-
-    @Autowired
-    private ProblemRepository problemRepository;
-
-    @Autowired
-    private TestcaseRepository testcaseRepository;
-
-    @Autowired
-    private UserService userService;
+    public SubmissionServiceImpl(
+            SubmissionRepository submissionRepository,
+            ProblemRepository problemRepository,
+            TestcaseRepository testcaseRepository,
+            UserService userService
+    ) {
+        this.submissionRepository = submissionRepository;
+        this.problemRepository = problemRepository;
+        this.testcaseRepository = testcaseRepository;
+        this.userService = userService;
+    }
 
     @Override
     public SubmissionResponse submitSolution(SubmissionRequest request, String username) throws Exception {
         User user = userService.findByUsername(username);
-        Problem problem = problemRepository.findByProblemCode(request.getProblemCode())
+        Problem problem = problemRepository.findByProblemCode(request.getProblemId())
                 .orElseThrow(() -> new Exception("Problem not found"));
 
         Submission submission = new Submission();
         submission.setProblem(problem);
-        submission.setUser(user);
+        submission.setCreatedBy(user);
         submission.setCode(request.getCode());
         submission.setLanguage(request.getLanguage().toUpperCase());
         submission.setStatus(SUBMISSION_STATUS.PENDING);
@@ -63,7 +66,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     @Override
     public List<SubmissionResponse> getSubmissionsByUser(String username) throws Exception {
         User user = userService.findByUsername(username);
-        return submissionRepository.findByUser_UidOrderBySubmittedAtDesc(user.getUid()).stream()
+        return submissionRepository.findByUser_UidOrderBySubmittedAtDesc(user.getUserId()).stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
@@ -78,7 +81,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     @Override
     public List<SubmissionResponse> getSubmissionsByUserAndProblem(String username, Long problemId) throws Exception {
         User user = userService.findByUsername(username);
-        return submissionRepository.findByUser_UidAndProblem_ProblemIdOrderBySubmittedAtDesc(user.getUid(), problemId)
+        return submissionRepository.findByUser_UidAndProblem_ProblemIdOrderBySubmittedAtDesc(user.getUserId(), problemId)
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -89,7 +92,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         response.setSubmissionId(submission.getSubmissionId());
         response.setProblemCode(submission.getProblem().getProblemCode());
         response.setProblemTitle(submission.getProblem().getTitle());
-        response.setUsername(submission.getUser().getUsername());
+        response.setUsername(submission.getCreatedBy().getUsername());
         response.setLanguage(submission.getLanguage());
         response.setStatus(submission.getStatus());
         response.setExecutionTime(submission.getExecutionTime());

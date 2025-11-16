@@ -4,7 +4,6 @@ import com.soict.CodeArena.model.DIFFICULTY_LEVEL;
 import com.soict.CodeArena.request.ProblemRequest;
 import com.soict.CodeArena.response.ProblemResponse;
 import com.soict.CodeArena.service.ProblemService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,8 +16,11 @@ import java.util.List;
 @RequestMapping("/api/problems")
 public class ProblemController {
 
-    @Autowired
-    private ProblemService problemService;
+    private final ProblemService problemService;
+
+    public ProblemController(ProblemService problemService) {
+        this.problemService = problemService;
+    }
 
     @PostMapping
     public ResponseEntity<ProblemResponse> createProblem(

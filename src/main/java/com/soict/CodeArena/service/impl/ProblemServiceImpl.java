@@ -8,7 +8,6 @@ import com.soict.CodeArena.request.ProblemRequest;
 import com.soict.CodeArena.response.ProblemResponse;
 import com.soict.CodeArena.service.ProblemService;
 import com.soict.CodeArena.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +18,13 @@ import java.util.stream.Collectors;
 @Service
 public class ProblemServiceImpl implements ProblemService {
 
-    @Autowired
-    private ProblemRepository problemRepository;
+    private final ProblemRepository problemRepository;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    public ProblemServiceImpl(ProblemRepository problemRepository,  UserService userService) {
+        this.problemRepository = problemRepository;
+        this.userService = userService;
+    }
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")

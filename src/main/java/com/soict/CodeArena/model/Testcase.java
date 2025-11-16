@@ -13,18 +13,13 @@ public class Testcase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long testcaseId;
-
     @ManyToOne
     @JoinColumn(name = "problem_id", nullable = false)
     private Problem problem;
-
     @Column(columnDefinition = "TEXT", nullable = false)
     private String input;
-
     @Column(columnDefinition = "TEXT", nullable = false)
     private String expectedOutput;
-
     private boolean isSample = false;
-
     private Integer orderIndex;
 }

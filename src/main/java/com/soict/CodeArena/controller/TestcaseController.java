@@ -3,7 +3,6 @@ package com.soict.CodeArena.controller;
 import com.soict.CodeArena.request.TestcaseRequest;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,8 +15,11 @@ import java.util.List;
 @RequestMapping("/api/testcases")
 public class TestcaseController {
 
-    @Autowired
-    private TestcaseService testcaseService;
+    private final TestcaseService testcaseService;
+
+    public TestcaseController(TestcaseService testcaseService) {
+        this.testcaseService = testcaseService;
+    }
 
     @PostMapping("/problem/{problemId}")
     public ResponseEntity<TestcaseResponse> createTestcase(

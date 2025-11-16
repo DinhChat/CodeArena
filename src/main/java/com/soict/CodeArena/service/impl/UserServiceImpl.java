@@ -99,4 +99,13 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user);
         return new UserManagerResponse(user.getUsername(), user.getRole());
     }
+
+    @Override
+    public User findByUsername(String username) throws Exception {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new Exception("User not found");
+        }
+        return user;
+    }
 }

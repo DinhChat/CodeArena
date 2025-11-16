@@ -14,4 +14,5 @@ public interface UserService {
     List<UserManagerResponse> findAllUsersByRole(USER_ROLE role) throws Exception;
     UserManagerResponse manageAdminRole(ManageAdminRequest req) throws Exception;
     UserManagerResponse deleteUserById(Long uid) throws Exception;
+    User findByUsername(String username) throws Exception;
 }

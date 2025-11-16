@@ -15,33 +15,24 @@ public class Submission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long submissionId;
-
     @ManyToOne
     @JoinColumn(name = "problem_id", nullable = false)
     private Problem problem;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
+    private User createdBy;
     @Column(columnDefinition = "TEXT", nullable = false)
     private String code;
-
     @Column(nullable = false)
     private String language;
-
     @Enumerated(EnumType.STRING)
     private SUBMISSION_STATUS status = SUBMISSION_STATUS.PENDING;
-
-    private Integer executionTime;
-    private Integer memoryUsed;
-
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
-
+    private Integer executionTime;
+    private Integer memoryUsed;
     private Integer passedTestcases;
     private Integer totalTestcases;
-
     private LocalDateTime submittedAt;
     private LocalDateTime judgedAt;
 }

@@ -7,7 +7,6 @@ import com.soict.CodeArena.repository.TestcaseRepository;
 import com.soict.CodeArena.request.TestcaseRequest;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +15,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class TestcaseServiceImpl implements TestcaseService {
+    private final TestcaseRepository testcaseRepository;
+    private final ProblemRepository problemRepository;
 
-    @Autowired
-    private TestcaseRepository testcaseRepository;
-
-    @Autowired
-    private ProblemRepository problemRepository;
+    public TestcaseServiceImpl(TestcaseRepository testcaseRepository, ProblemRepository problemRepository) {
+        this.testcaseRepository = testcaseRepository;
+        this.problemRepository = problemRepository;
+    }
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
