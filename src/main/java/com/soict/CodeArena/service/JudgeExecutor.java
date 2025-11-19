@@ -74,13 +74,32 @@ public class JudgeExecutor {
 
             SandboxResponse result = response.getBody();
 
+
             if (response.getStatusCode().is2xxSuccessful() && result != null) {
-                submission.setPassedTestcases(result.getPassed());
-                submission.setTotalTestcases(result.getTotal());
-                submission.setExecutionTime(result.getExecutionTime().intValue());
-                submission.setMemoryUsed(result.getMemoryUsed());
-                submission.setErrorMessage(result.getError());
-                submission.setStatus(SUBMISSION_STATUS.valueOf(result.getStatus()));
+
+                submission.setPassedTestcases(result.getMeta().getPassedTestCases());
+                submission.setTotalTestcases(result.getMeta().getTotalTestCases());
+
+                submission.setExecutionTime(
+                        (int) result.getResults().stream()
+                                .mapToDouble(r -> r.getTimeTaken() != null ? r.getTimeTaken() : 0)
+                                .sum()
+                );
+
+                submission.setMemoryUsed(
+                        result.getResults().stream()
+                                .mapToInt(r -> r.getMemoryUsed() != null ? r.getMemoryUsed() : 0)
+                                .max()
+                                .orElse(0)
+                );
+
+                submission.setErrorMessage(result.getMeta().getCompilationError());
+                submission.setStatus(
+                        result.getMeta().getAllPassed()
+                                ? SUBMISSION_STATUS.ACCEPTED
+                                : SUBMISSION_STATUS.WRONG_ANSWER
+                );
+
             } else {
                 submission.setStatus(SUBMISSION_STATUS.RUNTIME_ERROR);
             }

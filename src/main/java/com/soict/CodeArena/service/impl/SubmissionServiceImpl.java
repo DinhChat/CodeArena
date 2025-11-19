@@ -6,6 +6,7 @@ import com.soict.CodeArena.repository.SubmissionRepository;
 import com.soict.CodeArena.repository.TestcaseRepository;
 import com.soict.CodeArena.request.SubmissionRequest;
 import com.soict.CodeArena.response.SubmissionResponse;
+import com.soict.CodeArena.service.SubmissionQueue;
 import com.soict.CodeArena.service.SubmissionService;
 import com.soict.CodeArena.service.UserService;
 import org.springframework.stereotype.Service;
@@ -20,23 +21,26 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final ProblemRepository problemRepository;
     private final TestcaseRepository testcaseRepository;
     private final UserService userService;
+    private final SubmissionQueue  submissionQueue;
 
     public SubmissionServiceImpl(
             SubmissionRepository submissionRepository,
             ProblemRepository problemRepository,
             TestcaseRepository testcaseRepository,
-            UserService userService
+            UserService userService,
+            SubmissionQueue  submissionQueue
     ) {
         this.submissionRepository = submissionRepository;
         this.problemRepository = problemRepository;
         this.testcaseRepository = testcaseRepository;
         this.userService = userService;
+        this.submissionQueue = submissionQueue;
     }
 
     @Override
     public SubmissionResponse submitSolution(SubmissionRequest request, String username) throws Exception {
         User user = userService.findByUsername(username);
-        Problem problem = problemRepository.findByProblemCode(request.getProblemId())
+        Problem problem = problemRepository.findByProblemId(request.getProblemId())
                 .orElseThrow(() -> new Exception("Problem not found"));
 
         Submission submission = new Submission();
@@ -53,6 +57,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         submission.setPassedTestcases(0);
 
         Submission savedSubmission = submissionRepository.save(submission);
+        submissionQueue.addSubmission(savedSubmission.getSubmissionId());
         return convertToResponse(savedSubmission);
     }
 

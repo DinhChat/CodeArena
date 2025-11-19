@@ -6,12 +6,12 @@ import lombok.Data;
 @Data
 public class TestCaseDTO {
     @JsonProperty("input")
-    private String inputData;
+    private String input;
     @JsonProperty("expected_output")
     private String expectedOutput;
 
     public TestCaseDTO(String input, String expectedOutput) {
-        this.inputData = input;
+        this.input = input;
         this.expectedOutput = expectedOutput;
     }
 }

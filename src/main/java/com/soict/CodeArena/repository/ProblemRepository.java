@@ -14,4 +14,6 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
 
     List<Problem> findByIsActive(boolean isActive);
 
+    Optional<Problem> findByProblemId(Long problemId);
+
 }
