@@ -58,7 +58,7 @@ public class JudgeExecutor {
                     .findByProblem_ProblemIdOrderByOrderIndexAsc(problem.getProblemId());
 
             List<TestCaseDTO> testcaseDTOs = testcases.stream()
-                    .map(tc -> new TestCaseDTO(ensureNewline(tc.getInput()), tc.getExpectedOutput()))
+                    .map(tc -> new TestCaseDTO(tc.getInput(), tc.getExpectedOutput()))
                     .toList();
 
             SubmissionPayload payload = new SubmissionPayload();
@@ -121,9 +121,5 @@ public class JudgeExecutor {
 
         submission.setJudgedAt(LocalDateTime.now());
         submissionRepository.save(submission);
-    }
-
-    private String ensureNewline(String s) {
-        return s == null ? "\n" : (s.endsWith("\n") ? s : s + "\n");
     }
 }
