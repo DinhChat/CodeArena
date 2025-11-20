@@ -12,11 +12,13 @@ import com.soict.CodeArena.response.SandboxResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -66,11 +68,25 @@ public class JudgeExecutor {
             payload.setTimeLimit(problem.getTimeLimit());
             payload.setMemoryLimit(problem.getMemoryLimit());
 
-            ResponseEntity<SandboxResponse> response = restTemplate.postForEntity(
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(payload.toString().getBytes(StandardCharsets.UTF_8).length));
+
+            HttpEntity<SubmissionPayload> entity = new HttpEntity<>(payload, headers);
+
+            ResponseEntity<SandboxResponse> response = restTemplate.exchange(
                     sandboxUrl + "/submissions/run",
-                    payload,
+                    HttpMethod.POST,
+                    entity,
                     SandboxResponse.class
             );
+
+//            ResponseEntity<SandboxResponse> response = restTemplate.postForEntity(
+//                    sandboxUrl + "/submissions/run",
+//                    payload,
+//                    SandboxResponse.class
+//            );
 
             SandboxResponse result = response.getBody();
 
