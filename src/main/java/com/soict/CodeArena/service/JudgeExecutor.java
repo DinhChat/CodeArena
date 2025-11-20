@@ -58,12 +58,12 @@ public class JudgeExecutor {
                     .findByProblem_ProblemIdOrderByOrderIndexAsc(problem.getProblemId());
 
             List<TestCaseDTO> testcaseDTOs = testcases.stream()
-                    .map(tc -> new TestCaseDTO(tc.getInput(), tc.getExpectedOutput()))
+                    .map(tc -> new TestCaseDTO(ensureNewline(tc.getInput()), tc.getExpectedOutput()))
                     .toList();
 
             SubmissionPayload payload = new SubmissionPayload();
             payload.setSubmissionCode(submission.getCode());
-            payload.setLanguage(submission.getLanguage());
+            payload.setLanguage(submission.getLanguage().toLowerCase());
             payload.setTestcases(testcaseDTOs);
             payload.setTimeLimit(problem.getTimeLimit());
             payload.setMemoryLimit(problem.getMemoryLimit());
@@ -81,12 +81,6 @@ public class JudgeExecutor {
                     entity,
                     SandboxResponse.class
             );
-
-//            ResponseEntity<SandboxResponse> response = restTemplate.postForEntity(
-//                    sandboxUrl + "/submissions/run",
-//                    payload,
-//                    SandboxResponse.class
-//            );
 
             SandboxResponse result = response.getBody();
 
@@ -127,5 +121,9 @@ public class JudgeExecutor {
 
         submission.setJudgedAt(LocalDateTime.now());
         submissionRepository.save(submission);
+    }
+
+    private String ensureNewline(String s) {
+        return s == null ? "\n" : (s.endsWith("\n") ? s : s + "\n");
     }
 }
