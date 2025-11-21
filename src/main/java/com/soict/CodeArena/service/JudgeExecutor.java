@@ -71,7 +71,6 @@ public class JudgeExecutor {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-            headers.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(payload.toString().getBytes(StandardCharsets.UTF_8).length));
 
             HttpEntity<SubmissionPayload> entity = new HttpEntity<>(payload, headers);
 
