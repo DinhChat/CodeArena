@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/testcases")
+@RequestMapping("/testcases")
 public class TestcaseController {
 
     private final TestcaseService testcaseService;

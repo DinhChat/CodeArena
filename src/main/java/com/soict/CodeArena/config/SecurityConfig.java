@@ -26,12 +26,12 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         // Problem endpoints - ADMIN can create/update/delete, all authenticated users
                         // can view
-                        .requestMatchers("/api/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
+                        .requestMatchers("/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
                         // Testcase endpoints - Only ADMIN can manage testcases
-                        .requestMatchers("/api/testcases/**").hasAnyAuthority("ADMIN", "MANAGER")
+                        .requestMatchers("/testcases/**").hasAnyAuthority("ADMIN", "MANAGER")
                         // Submission endpoints - All authenticated users can submit
-                        .requestMatchers("/api/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
-                        .requestMatchers("/api/admins").hasAuthority("MANAGER")
+                        .requestMatchers("/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
+                        .requestMatchers("/admins").hasAuthority("MANAGER")
                         .requestMatchers("/manager/**").hasAnyAuthority("MANAGER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
