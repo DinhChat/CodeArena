@@ -24,11 +24,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/home").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/api/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
-                        .requestMatchers("/api/testcases/**").hasAnyAuthority("ADMIN", "MANAGER")
-                        .requestMatchers("/api/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
-                        .requestMatchers("/api/comments/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
-                        .requestMatchers("/api/admins").hasAuthority("MANAGER")
+                        .requestMatchers("/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
+                        .requestMatchers("/testcases/**").hasAnyAuthority("ADMIN", "MANAGER")
+                        .requestMatchers("/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
+                        .requestMatchers("/comments/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
+                        .requestMatchers("/manager/**").hasAuthority("MANAGER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
