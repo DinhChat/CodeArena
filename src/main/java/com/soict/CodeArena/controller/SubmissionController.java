@@ -31,22 +31,19 @@ public class SubmissionController {
     }
 
     @GetMapping("/{submissionId}")
-    public ResponseEntity<SubmissionResponse> getSubmissionById(@PathVariable Long submissionId) throws Exception {
-        SubmissionResponse response = submissionService.getSubmissionById(submissionId);
+    public ResponseEntity<SubmissionResponse> getSubmissionById(
+            @PathVariable Long submissionId,
+            Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        SubmissionResponse response = submissionService.getSubmissionById(submissionId, username);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<SubmissionResponse>> getSubmissionsByUser(
+    public ResponseEntity<List<SubmissionResponse>> getAllMySubmissions(
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        List<SubmissionResponse> responses = submissionService.getSubmissionsByUser(username);
-        return new ResponseEntity<>(responses, HttpStatus.OK);
-    }
-
-    @GetMapping("/problem/{problemId}")
-    public ResponseEntity<List<SubmissionResponse>> getSubmissionsByProblem(@PathVariable Long problemId) {
-        List<SubmissionResponse> responses = submissionService.getSubmissionsByProblem(problemId);
+        List<SubmissionResponse> responses = submissionService.getMySubmissions(username);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 

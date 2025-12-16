@@ -31,7 +31,6 @@ public class ProblemServiceImpl implements ProblemService {
     public ProblemResponse createProblem(ProblemRequest request, String username) throws Exception {
         User user = userService.findByUsername(username);
 
-        // Check if problem code already exists
         if (problemRepository.findByProblemCode(request.getProblemCode()).isPresent()) {
             throw new IllegalArgumentException("Problem code already exists");
         }
@@ -60,6 +59,10 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new Exception("Problem not found"));
 
+        if (problem.getCreatedBy() != userService.findByUsername(username)) {
+            throw new IllegalArgumentException("You can't update this problem");
+        }
+
         problem.setTitle(request.getTitle());
         problem.setDescription(request.getDescription());
         problem.setInputFormat(request.getInputFormat());
@@ -73,6 +76,22 @@ public class ProblemServiceImpl implements ProblemService {
         Problem updatedProblem = problemRepository.save(problem);
         return convertToResponse(updatedProblem);
     }
+
+    @Override
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    public ProblemResponse activeProblem(Long problemId, String username) throws Exception {
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new Exception("Problem not found"));
+
+        if (problem.getCreatedBy() != userService.findByUsername(username)) {
+            throw new IllegalArgumentException("You can't active this problem");
+        }
+
+        problem.setActive(true);
+        Problem updatedProblem = problemRepository.save(problem);
+        return convertToResponse(updatedProblem);
+    }
+
 
     @Override
     public ProblemResponse getProblemById(Long problemId) throws Exception {
@@ -89,18 +108,23 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public List<ProblemResponse> getAllProblems() {
-        return problemRepository.findAll().stream()
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    public List<ProblemResponse> getMyProblems(String  username) throws Exception {
+        User user  = userService.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("Not found user");
+        }
+        return problemRepository.findAllByCreatedBy(user).stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<ProblemResponse> getProblemsByDifficulty(DIFFICULTY_LEVEL difficulty) {
-        return problemRepository.findByDifficultyLevel(difficulty).stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
+//    @Override
+//    public List<ProblemResponse> getProblemsByDifficulty(DIFFICULTY_LEVEL difficulty) {
+//        return problemRepository.findByDifficultyLevel(difficulty).stream()
+//                .map(this::convertToResponse)
+//                .collect(Collectors.toList());
+//    }
 
     @Override
     public List<ProblemResponse> getActiveProblems() {
@@ -114,9 +138,11 @@ public class ProblemServiceImpl implements ProblemService {
     public void deleteProblem(Long problemId, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new Exception("Problem not found"));
-
-        problem.setActive(false);
-        problemRepository.save(problem);
+        if (problem.getCreatedBy() != userService.findByUsername(username)) {
+            throw new IllegalArgumentException("You can't delete this problem");
+        } else {
+            problemRepository.deleteById(problemId);
+        }
     }
 
     private ProblemResponse convertToResponse(Problem problem) {

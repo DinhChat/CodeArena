@@ -1,6 +1,5 @@
 package com.soict.CodeArena.controller;
 
-import com.soict.CodeArena.model.DIFFICULTY_LEVEL;
 import com.soict.CodeArena.request.ProblemRequest;
 import com.soict.CodeArena.response.ProblemResponse;
 import com.soict.CodeArena.service.ProblemService;
@@ -54,8 +53,9 @@ public class ProblemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProblemResponse>> getAllProblems() {
-        List<ProblemResponse> responses = problemService.getAllProblems();
+    public ResponseEntity<List<ProblemResponse>> getMyProblems(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        List<ProblemResponse> responses = problemService.getMyProblems(username);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
@@ -65,11 +65,13 @@ public class ProblemController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @GetMapping("/difficulty/{difficulty}")
-    public ResponseEntity<List<ProblemResponse>> getProblemsByDifficulty(
-            @PathVariable DIFFICULTY_LEVEL difficulty) {
-        List<ProblemResponse> responses = problemService.getProblemsByDifficulty(difficulty);
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+    @PostMapping("/active/{problemId}")
+    public ResponseEntity<ProblemResponse> activateProblem(
+            @PathVariable Long problemId,
+            Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        ProblemResponse problemResponse = problemService.activeProblem(problemId, username);
+        return new ResponseEntity<>(problemResponse,HttpStatus.OK);
     }
 
     @DeleteMapping("/{problemId}")

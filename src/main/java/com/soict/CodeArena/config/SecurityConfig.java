@@ -25,10 +25,10 @@ public class SecurityConfig {
                         .requestMatchers("/", "/home").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
-                        .requestMatchers("/testcases/**").hasAnyAuthority("ADMIN", "MANAGER")
+                        .requestMatchers("/testcases/**").hasAnyAuthority("ADMIN", "MANAGER", "USER")
                         .requestMatchers("/submissions/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
                         .requestMatchers("/comments/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
-                        .requestMatchers("/manager/**").hasAuthority("MANAGER")
+                        .requestMatchers("/user/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

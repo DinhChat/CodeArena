@@ -11,13 +11,15 @@ public interface ProblemService {
 
     ProblemResponse updateProblem(Long problemId, ProblemRequest request, String username) throws Exception;
 
+    ProblemResponse activeProblem(Long problemId, String username) throws Exception;
+
     ProblemResponse getProblemById(Long problemId) throws Exception;
 
     ProblemResponse getProblemByCode(String problemCode) throws Exception;
 
-    List<ProblemResponse> getAllProblems();
+    List<ProblemResponse> getMyProblems(String username) throws Exception;
 
-    List<ProblemResponse> getProblemsByDifficulty(DIFFICULTY_LEVEL difficulty);
+//    List<ProblemResponse> getProblemsByDifficulty(DIFFICULTY_LEVEL difficulty);
 
     List<ProblemResponse> getActiveProblems();
 

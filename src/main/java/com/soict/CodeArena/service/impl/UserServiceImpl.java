@@ -9,6 +9,7 @@ import com.soict.CodeArena.request.RegisterRequest;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('MANAGER')")
     public UserManagerResponse manageAdminRole(ManageAdminRequest req) throws Exception {
         User user = userRepository.findByUsername(req.getUsername());
         if (user == null) {
@@ -91,6 +93,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('MANAGER')")
     public UserManagerResponse deleteUserById(Long uid) throws Exception {
         User user = userRepository.findUserByUserId(uid);
         if (user == null) {

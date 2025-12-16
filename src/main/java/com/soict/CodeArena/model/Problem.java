@@ -36,5 +36,5 @@ public class Problem {
     private Integer memoryLimit;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private boolean isActive = true;
+    private boolean isActive = false;
 }

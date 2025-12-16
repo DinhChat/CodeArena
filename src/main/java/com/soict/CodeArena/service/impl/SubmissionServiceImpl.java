@@ -62,23 +62,18 @@ public class SubmissionServiceImpl implements SubmissionService {
     }
 
     @Override
-    public SubmissionResponse getSubmissionById(Long submissionId) throws Exception {
+    public SubmissionResponse getSubmissionById(Long submissionId, String username) throws Exception {
+        User  user = userService.findByUsername(username);
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new Exception("Submission not found"));
+        if (!submission.getCreatedBy().equals(user)) throw new Exception("Can't get other submission");
         return convertToResponse(submission);
     }
 
     @Override
-    public List<SubmissionResponse> getSubmissionsByUser(String username) throws Exception {
+    public List<SubmissionResponse> getMySubmissions(String username) throws Exception {
         User user = userService.findByUsername(username);
         return submissionRepository.findByCreatedBy_UserIdOrderBySubmittedAtDesc(user.getUserId()).stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<SubmissionResponse> getSubmissionsByProblem(Long problemId) {
-        return submissionRepository.findByProblem_ProblemIdOrderBySubmittedAtDesc(problemId).stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }

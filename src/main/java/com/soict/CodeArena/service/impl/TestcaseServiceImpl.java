@@ -2,8 +2,10 @@ package com.soict.CodeArena.service.impl;
 
 import com.soict.CodeArena.model.Problem;
 import com.soict.CodeArena.model.Testcase;
+import com.soict.CodeArena.model.User;
 import com.soict.CodeArena.repository.ProblemRepository;
 import com.soict.CodeArena.repository.TestcaseRepository;
+import com.soict.CodeArena.repository.UserRepository;
 import com.soict.CodeArena.request.TestcaseRequest;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
@@ -17,10 +19,15 @@ import java.util.stream.Collectors;
 public class TestcaseServiceImpl implements TestcaseService {
     private final TestcaseRepository testcaseRepository;
     private final ProblemRepository problemRepository;
+    private final UserRepository userRepository;
 
-    public TestcaseServiceImpl(TestcaseRepository testcaseRepository, ProblemRepository problemRepository) {
+    public TestcaseServiceImpl(
+            TestcaseRepository testcaseRepository,
+            ProblemRepository problemRepository,
+            UserRepository userRepository) {
         this.testcaseRepository = testcaseRepository;
         this.problemRepository = problemRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -28,6 +35,14 @@ public class TestcaseServiceImpl implements TestcaseService {
     public TestcaseResponse createTestcase(Long problemId, TestcaseRequest request, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new Exception("Problem not found"));
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new Exception("User not found");
+        }
+
+        if (!problem.getCreatedBy().equals(user)) {
+            throw new Exception("Cannot create testcase");
+        }
 
         Testcase testcase = new Testcase();
         testcase.setProblem(problem);
@@ -45,6 +60,15 @@ public class TestcaseServiceImpl implements TestcaseService {
     public TestcaseResponse updateTestcase(Long testcaseId, TestcaseRequest request, String username) throws Exception {
         Testcase testcase = testcaseRepository.findById(testcaseId)
                 .orElseThrow(() -> new Exception("Testcase not found"));
+        User user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new Exception("User not found");
+        }
+
+        if (!testcase.getProblem().getCreatedBy().equals(user)) {
+            throw new Exception("Cannot update testcase");
+        }
 
         testcase.setInput(request.getInput());
         testcase.setExpectedOutput(request.getExpectedOutput());
