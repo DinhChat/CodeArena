@@ -1,6 +1,5 @@
 package com.soict.CodeArena.service.impl;
 
-import com.soict.CodeArena.model.DIFFICULTY_LEVEL;
 import com.soict.CodeArena.model.Problem;
 import com.soict.CodeArena.model.User;
 import com.soict.CodeArena.repository.ProblemRepository;
@@ -8,6 +7,7 @@ import com.soict.CodeArena.request.ProblemRequest;
 import com.soict.CodeArena.response.ProblemResponse;
 import com.soict.CodeArena.service.ProblemService;
 import com.soict.CodeArena.service.UserService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +60,7 @@ public class ProblemServiceImpl implements ProblemService {
                 .orElseThrow(() -> new Exception("Problem not found"));
 
         if (problem.getCreatedBy() != userService.findByUsername(username)) {
-            throw new IllegalArgumentException("You can't update this problem");
+            throw new AccessDeniedException("You can't update this problem");
         }
 
         problem.setTitle(request.getTitle());
@@ -84,7 +84,7 @@ public class ProblemServiceImpl implements ProblemService {
                 .orElseThrow(() -> new Exception("Problem not found"));
 
         if (problem.getCreatedBy() != userService.findByUsername(username)) {
-            throw new IllegalArgumentException("You can't active this problem");
+            throw new AccessDeniedException("You can't active this problem");
         }
 
         problem.setActive(true);
@@ -119,13 +119,6 @@ public class ProblemServiceImpl implements ProblemService {
                 .collect(Collectors.toList());
     }
 
-//    @Override
-//    public List<ProblemResponse> getProblemsByDifficulty(DIFFICULTY_LEVEL difficulty) {
-//        return problemRepository.findByDifficultyLevel(difficulty).stream()
-//                .map(this::convertToResponse)
-//                .collect(Collectors.toList());
-//    }
-
     @Override
     public List<ProblemResponse> getActiveProblems() {
         return problemRepository.findByIsActive(true).stream()
@@ -139,7 +132,7 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new Exception("Problem not found"));
         if (problem.getCreatedBy() != userService.findByUsername(username)) {
-            throw new IllegalArgumentException("You can't delete this problem");
+            throw new AccessDeniedException("You can't delete this problem");
         } else {
             problemRepository.deleteById(problemId);
         }

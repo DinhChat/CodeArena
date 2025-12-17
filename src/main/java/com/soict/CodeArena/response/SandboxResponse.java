@@ -13,7 +13,7 @@ import java.util.List;
 public class SandboxResponse {
 
     private Meta meta;
-    private List<TestcaseResult> results;
+    private List<TestcaseResultResponse> results;
 
     @Data
     @AllArgsConstructor
@@ -35,7 +35,7 @@ public class SandboxResponse {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class TestcaseResult {
+    public static class TestcaseResultResponse {
         @JsonProperty("test_case_number")
         private Integer testCaseNumber;
 

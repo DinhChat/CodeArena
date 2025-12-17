@@ -9,6 +9,7 @@ import com.soict.CodeArena.response.SubmissionResponse;
 import com.soict.CodeArena.service.SubmissionQueue;
 import com.soict.CodeArena.service.SubmissionService;
 import com.soict.CodeArena.service.UserService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -66,7 +67,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         User  user = userService.findByUsername(username);
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new Exception("Submission not found"));
-        if (!submission.getCreatedBy().equals(user)) throw new Exception("Can't get other submission");
+        if (!submission.getCreatedBy().equals(user)) throw new AccessDeniedException("Can't get other submission");
         return convertToResponse(submission);
     }
 

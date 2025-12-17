@@ -52,20 +52,20 @@ public class ProblemController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping("/me")
     public ResponseEntity<List<ProblemResponse>> getMyProblems(Authentication authentication) throws Exception {
         String username = authentication.getName();
         List<ProblemResponse> responses = problemService.getMyProblems(username);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @GetMapping("/active")
+    @GetMapping
     public ResponseEntity<List<ProblemResponse>> getActiveProblems() {
         List<ProblemResponse> responses = problemService.getActiveProblems();
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @PostMapping("/active/{problemId}")
+    @PutMapping("/active/{problemId}")
     public ResponseEntity<ProblemResponse> activateProblem(
             @PathVariable Long problemId,
             Authentication authentication) throws Exception {

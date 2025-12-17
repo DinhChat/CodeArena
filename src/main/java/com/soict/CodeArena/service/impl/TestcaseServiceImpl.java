@@ -96,8 +96,16 @@ public class TestcaseServiceImpl implements TestcaseService {
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public void deleteTestcase(Long testcaseId, String username) throws Exception {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new Exception("User not found");
+        }
         Testcase testcase = testcaseRepository.findById(testcaseId)
                 .orElseThrow(() -> new Exception("Testcase not found"));
+
+        if (!testcase.getProblem().getCreatedBy().equals(user)) {
+            throw new Exception("Cannot delete testcase");
+        }
         testcaseRepository.delete(testcase);
     }
 
