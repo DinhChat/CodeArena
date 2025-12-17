@@ -2,12 +2,14 @@ package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.model.USER_ROLE;
 import com.soict.CodeArena.request.ManageAdminRequest;
+import com.soict.CodeArena.request.UserProfileRequest;
 import com.soict.CodeArena.response.UserManagerResponse;
+import com.soict.CodeArena.response.UserProfileResponse;
 import com.soict.CodeArena.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +30,14 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<UserDetailsResponse> getUser(@PathVariable String username) throws Exception {
-        return new ResponseEntity<>(userService.findByUsername(username), HttpStatus.OK);
+    public ResponseEntity<UserProfileResponse> getUser(@PathVariable String username) throws Exception {
+        return new ResponseEntity<>(userService.GetUserProfile(username), HttpStatus.OK);
+    }
+
+    @PostMapping("/profile")
+    public ResponseEntity<UserProfileResponse> updateUserProfile(UserProfileRequest req, Authentication authentication) throws Exception{
+        String username = authentication.getName();
+        return new ResponseEntity<>(userService.updateProfile(req, username), HttpStatus.OK);
     }
 
     @GetMapping("/{role}")
