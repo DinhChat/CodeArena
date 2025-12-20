@@ -1,4 +1,4 @@
-package com.soict.CodeArena.service;
+package com.soict.CodeArena.component;
 
 import com.soict.CodeArena.model.*;
 import com.soict.CodeArena.repository.SubmissionRepository;
@@ -7,6 +7,7 @@ import com.soict.CodeArena.repository.TestcaseResultRepository;
 import com.soict.CodeArena.request.SubmissionPayload;
 import com.soict.CodeArena.request.TestCaseDTO;
 import com.soict.CodeArena.response.SandboxResponse;
+import com.soict.CodeArena.service.UserProblemStatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -24,6 +25,7 @@ public class JudgeExecutor {
     private final SubmissionRepository submissionRepository;
     private final TestcaseRepository testcaseRepository;
     private final TestcaseResultRepository testcaseResultRepository;
+    private final UserProblemStatService userProblemStatService;
     private final RestTemplate restTemplate;
 
     @Value("${sandbox.url}")
@@ -34,10 +36,12 @@ public class JudgeExecutor {
             SubmissionRepository submissionRepository,
             TestcaseRepository testcaseRepository,
             TestcaseResultRepository testcaseResultRepository,
+            UserProblemStatService userProblemStatService,
             RestTemplateBuilder builder) {
         this.submissionRepository = submissionRepository;
         this.testcaseRepository = testcaseRepository;
         this.testcaseResultRepository = testcaseResultRepository;
+        this.userProblemStatService = userProblemStatService;
         this.restTemplate = builder.build();
     }
 
@@ -143,5 +147,6 @@ public class JudgeExecutor {
 
         testcaseResults.forEach(tr -> tr.setSubmission(submission));
         testcaseResultRepository.saveAll(testcaseResults);
+        userProblemStatService.updateStatAfterJudging(submission);
     }
 }

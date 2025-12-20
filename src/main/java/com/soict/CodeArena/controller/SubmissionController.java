@@ -1,7 +1,9 @@
 package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.request.SubmissionRequest;
-import com.soict.CodeArena.response.SubmissionResponse;
+import com.soict.CodeArena.response.DefaultSubmissionResponse;
+import com.soict.CodeArena.response.SubmissionDetailResponse;
+import com.soict.CodeArena.response.SubmissionItemResponse;
 import com.soict.CodeArena.service.SubmissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,37 +24,37 @@ public class SubmissionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubmissionResponse> submitSolution(
+    public ResponseEntity<SubmissionDetailResponse> submitSolution(
             @RequestBody SubmissionRequest request,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        SubmissionResponse response = submissionService.submitSolution(request, username);
+        SubmissionDetailResponse response = submissionService.submitSolution(request, username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{submissionId}")
-    public ResponseEntity<SubmissionResponse> getSubmissionById(
+    public ResponseEntity<SubmissionDetailResponse> getSubmissionById(
             @PathVariable Long submissionId,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        SubmissionResponse response = submissionService.getSubmissionById(submissionId, username);
+        SubmissionDetailResponse response = submissionService.getSubmissionById(submissionId, username);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<SubmissionResponse>> getAllMySubmissions(
+    public ResponseEntity<List<DefaultSubmissionResponse>> getAllMySubmissions(
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        List<SubmissionResponse> responses = submissionService.getMySubmissions(username);
+        List<DefaultSubmissionResponse> responses = submissionService.getMySubmissions(username);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @GetMapping("/user/problem/{problemId}")
-    public ResponseEntity<List<SubmissionResponse>> getSubmissionsByUserAndProblem(
+    public ResponseEntity<List<SubmissionItemResponse>> getSubmissionsByUserAndProblem(
             @PathVariable Long problemId,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        List<SubmissionResponse> responses = submissionService.getSubmissionsByUserAndProblem(username, problemId);
+        List<SubmissionItemResponse> responses = submissionService.getSubmissionsByUserAndProblem(username, problemId);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

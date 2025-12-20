@@ -9,8 +9,10 @@ import com.soict.CodeArena.repository.UserRepository;
 import com.soict.CodeArena.request.TestcaseRequest;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,14 +36,13 @@ public class TestcaseServiceImpl implements TestcaseService {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public TestcaseResponse createTestcase(Long problemId, TestcaseRequest request, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
-                .orElseThrow(() -> new Exception("Problem not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
         User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new Exception("User not found");
-        }
 
         if (!problem.getCreatedBy().equals(user)) {
-            throw new Exception("Cannot create testcase");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot create Testcase for not your Problem.");
         }
 
         Testcase testcase = new Testcase();
@@ -59,15 +60,15 @@ public class TestcaseServiceImpl implements TestcaseService {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public TestcaseResponse updateTestcase(Long testcaseId, TestcaseRequest request, String username) throws Exception {
         Testcase testcase = testcaseRepository.findById(testcaseId)
-                .orElseThrow(() -> new Exception("Testcase not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Testcase Not Found"
+                ));
         User user = userRepository.findByUsername(username);
 
-        if (user == null) {
-            throw new Exception("User not found");
-        }
-
         if (!testcase.getProblem().getCreatedBy().equals(user)) {
-            throw new Exception("Cannot update testcase");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Cannot update Testcase for not your Problem."
+            );
         }
 
         testcase.setInput(request.getInput());
@@ -97,14 +98,15 @@ public class TestcaseServiceImpl implements TestcaseService {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public void deleteTestcase(Long testcaseId, String username) throws Exception {
         User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new Exception("User not found");
-        }
         Testcase testcase = testcaseRepository.findById(testcaseId)
-                .orElseThrow(() -> new Exception("Testcase not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Testcase Not Found"
+                ));
 
         if (!testcase.getProblem().getCreatedBy().equals(user)) {
-            throw new Exception("Cannot delete testcase");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Cannot delete Testcase for not your Problem."
+            );
         }
         testcaseRepository.delete(testcase);
     }

@@ -2,14 +2,18 @@ package com.soict.CodeArena.service.impl;
 
 import com.soict.CodeArena.model.Problem;
 import com.soict.CodeArena.model.User;
+import com.soict.CodeArena.model.UserProblemStat;
 import com.soict.CodeArena.repository.ProblemRepository;
 import com.soict.CodeArena.request.ProblemRequest;
-import com.soict.CodeArena.response.ProblemResponse;
+import com.soict.CodeArena.response.DefaultProblemResponse;
+import com.soict.CodeArena.response.ProblemItemResponse;
+import com.soict.CodeArena.response.ProblemDetailResponse;
 import com.soict.CodeArena.service.ProblemService;
 import com.soict.CodeArena.service.UserService;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,11 +32,11 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public ProblemResponse createProblem(ProblemRequest request, String username) throws Exception {
+    public ProblemDetailResponse createProblem(ProblemRequest request, String username) throws Exception {
         User user = userService.findByUsername(username);
 
         if (problemRepository.findByProblemCode(request.getProblemCode()).isPresent()) {
-            throw new IllegalArgumentException("Problem code already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Problem Code already exists");
         }
 
         Problem problem = new Problem();
@@ -41,6 +45,8 @@ public class ProblemServiceImpl implements ProblemService {
         problem.setDescription(request.getDescription());
         problem.setInputFormat(request.getInputFormat());
         problem.setOutputFormat(request.getOutputFormat());
+        problem.setSampleInput(request.getSampleInput());
+        problem.setSampleOutput(request.getSampleOutput());
         problem.setConstraints(request.getConstraints());
         problem.setDifficultyLevel(request.getDifficultyLevel());
         problem.setTimeLimit(request.getTimeLimit());
@@ -55,18 +61,23 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public ProblemResponse updateProblem(Long problemId, ProblemRequest request, String username) throws Exception {
+    public ProblemDetailResponse updateProblem(Long problemId, ProblemRequest request, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
-                .orElseThrow(() -> new Exception("Problem not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
 
-        if (problem.getCreatedBy() != userService.findByUsername(username)) {
-            throw new AccessDeniedException("You can't update this problem");
+        if (!problem.getCreatedBy().getUserId()
+                .equals(userService.findByUsername(username).getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can't activate this problem");
         }
 
         problem.setTitle(request.getTitle());
         problem.setDescription(request.getDescription());
         problem.setInputFormat(request.getInputFormat());
         problem.setOutputFormat(request.getOutputFormat());
+        problem.setSampleInput(request.getSampleInput());
+        problem.setSampleOutput(request.getSampleOutput());
         problem.setConstraints(request.getConstraints());
         problem.setDifficultyLevel(request.getDifficultyLevel());
         problem.setTimeLimit(request.getTimeLimit());
@@ -79,12 +90,15 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public ProblemResponse activeProblem(Long problemId, String username) throws Exception {
+    public ProblemDetailResponse activeProblem(Long problemId, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
-                .orElseThrow(() -> new Exception("Problem not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
 
-        if (problem.getCreatedBy() != userService.findByUsername(username)) {
-            throw new AccessDeniedException("You can't active this problem");
+        if (!problem.getCreatedBy().getUserId()
+                .equals(userService.findByUsername(username).getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can't activate this problem");
         }
 
         problem.setActive(true);
@@ -94,58 +108,78 @@ public class ProblemServiceImpl implements ProblemService {
 
 
     @Override
-    public ProblemResponse getProblemById(Long problemId) throws Exception {
+    public ProblemDetailResponse getProblemById(Long problemId) {
         Problem problem = problemRepository.findById(problemId)
-                .orElseThrow(() -> new Exception("Problem not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
         return convertToResponse(problem);
     }
 
     @Override
-    public ProblemResponse getProblemByCode(String problemCode) throws Exception {
+    public ProblemDetailResponse getProblemByCode(String problemCode) {
         Problem problem = problemRepository.findByProblemCode(problemCode)
-                .orElseThrow(() -> new Exception("Problem not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
         return convertToResponse(problem);
     }
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public List<ProblemResponse> getMyProblems(String  username) throws Exception {
+    public List<DefaultProblemResponse> getMyProblems(String username) throws Exception {
         User user  = userService.findByUsername(username);
         if (user == null) {
-            throw new IllegalArgumentException("Not found user");
+            throw new IllegalStateException("Authenticated user not found");
         }
+
         return problemRepository.findAllByCreatedBy(user).stream()
-                .map(this::convertToResponse)
+                .map(this::convertToDefaultResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ProblemResponse> getActiveProblems() {
-        return problemRepository.findByIsActive(true).stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+    public List<ProblemItemResponse> getActiveProblems(String username) throws Exception {
+
+        User user = userService.findByUsername(username);
+
+        List<Object[]> rows =
+                problemRepository.findActiveProblemsWithUserStat(user);
+
+        return rows.stream().map(row -> {
+            Problem problem = (Problem) row[0];
+            UserProblemStat stat = (UserProblemStat) row[1];
+
+            return convertToItemResponse(problem, stat);
+        }).toList();
     }
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public void deleteProblem(Long problemId, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
-                .orElseThrow(() -> new Exception("Problem not found"));
-        if (problem.getCreatedBy() != userService.findByUsername(username)) {
-            throw new AccessDeniedException("You can't delete this problem");
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
+
+        if (!problem.getCreatedBy().getUserId()
+                .equals(userService.findByUsername(username).getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can't delete this problem");
         } else {
             problemRepository.deleteById(problemId);
         }
     }
 
-    private ProblemResponse convertToResponse(Problem problem) {
-        ProblemResponse response = new ProblemResponse();
+    private ProblemDetailResponse convertToResponse(Problem problem) {
+        ProblemDetailResponse response = new ProblemDetailResponse();
         response.setProblemId(problem.getProblemId());
         response.setProblemCode(problem.getProblemCode());
         response.setTitle(problem.getTitle());
         response.setDescription(problem.getDescription());
         response.setInputFormat(problem.getInputFormat());
         response.setOutputFormat(problem.getOutputFormat());
+        response.setSampleInput(response.getSampleInput());
+        response.setSampleOutput(response.getSampleOutput());
         response.setConstraints(problem.getConstraints());
         response.setDifficultyLevel(problem.getDifficultyLevel());
         response.setTimeLimit(problem.getTimeLimit());
@@ -155,5 +189,32 @@ public class ProblemServiceImpl implements ProblemService {
         response.setUpdatedDate(problem.getUpdatedDate());
         response.setActive(problem.isActive());
         return response;
+    }
+
+    private ProblemItemResponse convertToItemResponse(Problem problem, UserProblemStat stat) {
+        ProblemItemResponse res = new ProblemItemResponse();
+        res.setProblemId(problem.getProblemId());
+        res.setProblemCode(problem.getProblemCode());
+        res.setTitle(problem.getTitle());
+        res.setDifficultyLevel(problem.getDifficultyLevel());
+
+        if (stat != null) {
+            res.setAttempted(true);
+            res.setBestStatus(stat.getBestStatus());
+            res.setBestScore(stat.getBestScore());
+        } else {
+            res.setAttempted(false);
+            res.setBestStatus(null);
+            res.setBestScore(null);
+        }
+        return res;
+    }
+
+    private DefaultProblemResponse convertToDefaultResponse(Problem problem) {
+        DefaultProblemResponse res = new DefaultProblemResponse();
+        res.setProblemId(problem.getProblemId());
+        res.setTitle(problem.getTitle());
+        res.setDifficultyLevel(problem.getDifficultyLevel());
+        return res;
     }
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class SubmissionResponse {
+public class SubmissionDetailResponse {
     private Long submissionId;
     private String problemCode;
     private String problemTitle;

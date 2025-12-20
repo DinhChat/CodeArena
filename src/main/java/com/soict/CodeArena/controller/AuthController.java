@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,14 +26,10 @@ import java.util.List;
 public class AuthController {
     private final JwtProvider jwtProvider;
     private final UserService userService;
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserService userService, JwtProvider jwtProvider,  UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, JwtProvider jwtProvider) {
         this.userService = userService;
         this.jwtProvider = jwtProvider;
-        this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -61,23 +58,22 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(
             @RequestBody LoginRequest loginRequest
-    ) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUsername(userDetails.getUsername());
+    ) throws Exception {
+        User user = userService.loginUser(loginRequest);
 
-        if (passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails.getUsername(),
-                    userDetails.getPassword(),
-                    userDetails.getAuthorities()
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            userResponse.setJwtToken(jwtProvider.generateJwtToken(authentication));
-            userResponse.setMessage("Login Successfully!");
-        } else {
-            userResponse.setMessage("Login Fail!");
-        }
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getUsername(),
+                user.getHashedPassword(),
+                List.of(new SimpleGrantedAuthority(user.getRole().toString()))
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        UserResponse userResponse = new UserResponse();
+        userResponse.setUsername(user.getUsername());
+        userResponse.setRole(user.getRole());
+        userResponse.setJwtToken(jwtProvider.generateJwtToken(authentication));
+        userResponse.setMessage("Login Successfully");
 
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }

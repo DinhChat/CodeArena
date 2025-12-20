@@ -1,4 +1,4 @@
-package com.soict.CodeArena.service;
+package com.soict.CodeArena.component;
 
 import org.springframework.stereotype.Component;
 

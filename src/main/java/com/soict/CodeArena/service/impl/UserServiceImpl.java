@@ -6,6 +6,7 @@ import com.soict.CodeArena.model.User;
 import com.soict.CodeArena.model.UserProfile;
 import com.soict.CodeArena.repository.UserProfileRepository;
 import com.soict.CodeArena.repository.UserRepository;
+import com.soict.CodeArena.request.LoginRequest;
 import com.soict.CodeArena.request.ManageAdminRequest;
 import com.soict.CodeArena.request.RegisterRequest;
 import com.soict.CodeArena.request.UserProfileRequest;
@@ -13,9 +14,11 @@ import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
 import com.soict.CodeArena.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,7 +40,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User registerUser(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()) != null) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Username already exists"
+            );
         }
 
         User user = new User();
@@ -50,10 +56,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserManagerResponse> findAllUsers() throws Exception {
+    public User loginUser(LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.getUsername());
+        if (user == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid username or password"
+            );
+        }
+
+        if (!passwordEncoder.matches(
+                loginRequest.getPassword(),
+                user.getHashedPassword()
+        )) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid username or password"
+            );
+        }
+
+        return user;
+    }
+
+    @Override
+    public List<UserManagerResponse> findAllUsers() {
         List<User> users = userRepository.findAll();
         if (users.isEmpty()) {
-            throw new Exception("Can't find all users");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         List<UserManagerResponse> userManagerResponses = new ArrayList<>();
         users.forEach(user -> {
@@ -66,10 +95,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserManagerResponse> findAllUsersByRole(USER_ROLE role) throws Exception {
+    public List<UserManagerResponse> findAllUsersByRole(USER_ROLE role) {
         List<User> users = userRepository.findAllByRole(role);
         if (users.isEmpty()) {
-            throw new Exception("Can't find all users");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         List<UserManagerResponse> userManagerResponses = new ArrayList<>();
@@ -111,19 +140,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUsername(String username) throws Exception {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new Exception("User not found");
-        }
-        return user;
+        return userRepository.findByUsername(username);
     }
 
     @Override
     public UserProfileResponse GetUserProfile(String username) throws Exception {
         User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new Exception("User not found");
-        }
         UserProfile userProfile = userProfileRepository.findUserProfileByUser(user)
                 .orElseThrow(() -> new Exception("User not found"));
 

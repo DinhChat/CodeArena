@@ -29,6 +29,10 @@ public class Problem {
     @Column(columnDefinition = "TEXT")
     private String outputFormat;
     @Column(columnDefinition = "TEXT")
+    private String sampleInput;
+    @Column(columnDefinition = "TEXT")
+    private String sampleOutput;
+    @Column(columnDefinition = "TEXT")
     private String constraints;
     @Enumerated(EnumType.STRING)
     private DIFFICULTY_LEVEL difficultyLevel;

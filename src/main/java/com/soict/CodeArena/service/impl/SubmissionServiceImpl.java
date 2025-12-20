@@ -4,13 +4,18 @@ import com.soict.CodeArena.model.*;
 import com.soict.CodeArena.repository.ProblemRepository;
 import com.soict.CodeArena.repository.SubmissionRepository;
 import com.soict.CodeArena.repository.TestcaseRepository;
+import com.soict.CodeArena.repository.UserProblemStatRepository;
 import com.soict.CodeArena.request.SubmissionRequest;
-import com.soict.CodeArena.response.SubmissionResponse;
-import com.soict.CodeArena.service.SubmissionQueue;
+import com.soict.CodeArena.response.DefaultSubmissionResponse;
+import com.soict.CodeArena.response.SubmissionDetailResponse;
+import com.soict.CodeArena.component.SubmissionQueue;
+import com.soict.CodeArena.response.SubmissionItemResponse;
 import com.soict.CodeArena.service.SubmissionService;
 import com.soict.CodeArena.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +27,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final ProblemRepository problemRepository;
     private final TestcaseRepository testcaseRepository;
     private final UserService userService;
+    private final UserProblemStatRepository userProblemStatRepository;
     private final SubmissionQueue  submissionQueue;
 
     public SubmissionServiceImpl(
@@ -29,20 +35,24 @@ public class SubmissionServiceImpl implements SubmissionService {
             ProblemRepository problemRepository,
             TestcaseRepository testcaseRepository,
             UserService userService,
+            UserProblemStatRepository userProblemStatRepository,
             SubmissionQueue  submissionQueue
     ) {
         this.submissionRepository = submissionRepository;
         this.problemRepository = problemRepository;
         this.testcaseRepository = testcaseRepository;
         this.userService = userService;
+        this.userProblemStatRepository = userProblemStatRepository;
         this.submissionQueue = submissionQueue;
     }
 
     @Override
-    public SubmissionResponse submitSolution(SubmissionRequest request, String username) throws Exception {
+    public SubmissionDetailResponse submitSolution(SubmissionRequest request, String username) throws Exception {
         User user = userService.findByUsername(username);
-        Problem problem = problemRepository.findByProblemId(request.getProblemId())
-                .orElseThrow(() -> new Exception("Problem not found"));
+        Problem problem = problemRepository.findById(request.getProblemId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Problem Not Found"
+                ));
 
         Submission submission = new Submission();
         submission.setProblem(problem);
@@ -63,33 +73,50 @@ public class SubmissionServiceImpl implements SubmissionService {
     }
 
     @Override
-    public SubmissionResponse getSubmissionById(Long submissionId, String username) throws Exception {
+    public SubmissionDetailResponse getSubmissionById(Long submissionId, String username) throws Exception {
         User  user = userService.findByUsername(username);
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new Exception("Submission not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission Not Found"));
+
         if (!submission.getCreatedBy().equals(user)) throw new AccessDeniedException("Can't get other submission");
         return convertToResponse(submission);
     }
 
     @Override
-    public List<SubmissionResponse> getMySubmissions(String username) throws Exception {
+    public List<DefaultSubmissionResponse> getMySubmissions(String username) throws Exception {
         User user = userService.findByUsername(username);
-        return submissionRepository.findByCreatedBy_UserIdOrderBySubmittedAtDesc(user.getUserId()).stream()
-                .map(this::convertToResponse)
+        if (user == null) {
+            throw new IllegalStateException("Authenticated user not found");
+        }
+
+        return submissionRepository
+                .findByCreatedBy_UserIdOrderBySubmittedAtDesc(user.getUserId())
+                .stream()
+                .map(this::convertToDefaultResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<SubmissionResponse> getSubmissionsByUserAndProblem(String username, Long problemId) throws Exception {
+    public List<SubmissionItemResponse> getSubmissionsByUserAndProblem(String username, Long problemId) throws Exception {
         User user = userService.findByUsername(username);
-        return submissionRepository.findByCreatedBy_UserIdAndProblem_ProblemIdOrderBySubmittedAtDesc(user.getUserId(), problemId)
-                .stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+        List<Submission> submissions =
+                submissionRepository
+                        .findByCreatedBy_UserIdAndProblem_ProblemIdOrderBySubmittedAtDesc(
+                                user.getUserId(), problemId
+                        );
+
+        Long bestSubmissionId = userProblemStatRepository
+                .findByUserAndProblem(user, submissions.getFirst().getProblem())
+                .map(stat -> stat.getSubmission().getSubmissionId())
+                .orElse(null);
+
+        return submissions.stream()
+                .map(sub -> convertToItemResponse(sub, bestSubmissionId))
+                .toList();
     }
 
-    private SubmissionResponse convertToResponse(Submission submission) {
-        SubmissionResponse response = new SubmissionResponse();
+    private SubmissionDetailResponse convertToResponse(Submission submission) {
+        SubmissionDetailResponse response = new SubmissionDetailResponse();
         response.setSubmissionId(submission.getSubmissionId());
         response.setProblemCode(submission.getProblem().getProblemCode());
         response.setProblemTitle(submission.getProblem().getTitle());
@@ -104,5 +131,36 @@ public class SubmissionServiceImpl implements SubmissionService {
         response.setSubmittedAt(submission.getSubmittedAt());
         response.setJudgedAt(submission.getJudgedAt());
         return response;
+    }
+
+    private SubmissionItemResponse convertToItemResponse(
+            Submission submission,
+            Long bestSubmissionId) {
+
+        return new SubmissionItemResponse(
+                submission.getSubmissionId(),
+                submission.getStatus(),
+                submission.getPassedTestcases(),
+                submission.getTotalTestcases(),
+                submission.getExecutionTime(),
+                submission.getMemoryUsed(),
+                submission.getSubmissionId().equals(bestSubmissionId)
+        );
+    }
+
+    private DefaultSubmissionResponse convertToDefaultResponse(
+            Submission submission) {
+
+        DefaultSubmissionResponse res = new DefaultSubmissionResponse();
+
+        res.setSubmissionId(submission.getSubmissionId());
+        res.setProblemTitle(submission.getProblem().getTitle());
+        res.setLanguage(submission.getLanguage());
+        res.setStatus(submission.getStatus());
+        res.setPassedTestcases(submission.getPassedTestcases());
+        res.setTotalTestcases(submission.getTotalTestcases());
+        res.setJudgedAt(submission.getJudgedAt());
+
+        return res;
     }
 }

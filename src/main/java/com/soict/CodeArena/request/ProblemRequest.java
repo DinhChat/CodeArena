@@ -10,6 +10,8 @@ public class ProblemRequest {
     private String description;
     private String inputFormat;
     private String outputFormat;
+    private String sampleInput;
+    private String sampleOutput;
     private String constraints;
     private DIFFICULTY_LEVEL difficultyLevel;
     private Integer timeLimit;

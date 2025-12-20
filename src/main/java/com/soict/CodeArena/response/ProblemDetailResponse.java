@@ -6,13 +6,15 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class ProblemResponse {
+public class ProblemDetailResponse {
     private Long problemId;
     private String problemCode;
     private String title;
     private String description;
     private String inputFormat;
     private String outputFormat;
+    private String sampleInput;
+    private String sampleOutput;
     private String constraints;
     private DIFFICULTY_LEVEL difficultyLevel;
     private Integer timeLimit;

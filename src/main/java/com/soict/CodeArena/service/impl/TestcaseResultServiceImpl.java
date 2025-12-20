@@ -8,7 +8,9 @@ import com.soict.CodeArena.repository.TestcaseResultRepository;
 import com.soict.CodeArena.repository.UserRepository;
 import com.soict.CodeArena.response.UITestcaseResultResponse;
 import com.soict.CodeArena.service.TestcaseResultService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +31,10 @@ public class TestcaseResultServiceImpl implements TestcaseResultService {
     @Override
     public List<UITestcaseResultResponse> getAllTestcaseResult(Long submissionId, String username) throws Exception {
         User user = userRepository.findByUsername(username);
-        if(user == null){
-            throw new Exception("username not found");
-        }
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new Exception("Submission not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Submission not found"));
         if (!submission.getCreatedBy().equals(user)) {
-            throw new Exception("You do not have permission to view this submission's testcase results");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not allowed to access this submission");
         }
         List<TestcaseResult> testcaseResults = testcaseResultRepository.findBySubmission_SubmissionIdOrderByTestcaseResultIdAsc(submissionId);
 

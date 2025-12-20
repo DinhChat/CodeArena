@@ -1,7 +1,9 @@
 package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.request.ProblemRequest;
-import com.soict.CodeArena.response.ProblemResponse;
+import com.soict.CodeArena.response.DefaultProblemResponse;
+import com.soict.CodeArena.response.ProblemItemResponse;
+import com.soict.CodeArena.response.ProblemDetailResponse;
 import com.soict.CodeArena.service.ProblemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,56 +24,57 @@ public class ProblemController {
     }
 
     @PostMapping
-    public ResponseEntity<ProblemResponse> createProblem(
+    public ResponseEntity<ProblemDetailResponse> createProblem(
             @RequestBody ProblemRequest request,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        ProblemResponse response = problemService.createProblem(request, username);
+        ProblemDetailResponse response = problemService.createProblem(request, username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{problemId}")
-    public ResponseEntity<ProblemResponse> updateProblem(
+    public ResponseEntity<ProblemDetailResponse> updateProblem(
             @PathVariable Long problemId,
             @RequestBody ProblemRequest request,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        ProblemResponse response = problemService.updateProblem(problemId, request, username);
+        ProblemDetailResponse response = problemService.updateProblem(problemId, request, username);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{problemId}")
-    public ResponseEntity<ProblemResponse> getProblemById(@PathVariable Long problemId) throws Exception {
-        ProblemResponse response = problemService.getProblemById(problemId);
+    public ResponseEntity<ProblemDetailResponse> getProblemById(@PathVariable Long problemId) throws Exception {
+        ProblemDetailResponse response = problemService.getProblemById(problemId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/code/{problemCode}")
-    public ResponseEntity<ProblemResponse> getProblemByCode(@PathVariable String problemCode) throws Exception {
-        ProblemResponse response = problemService.getProblemByCode(problemCode);
+    public ResponseEntity<ProblemDetailResponse> getProblemByCode(@PathVariable String problemCode) throws Exception {
+        ProblemDetailResponse response = problemService.getProblemByCode(problemCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ProblemResponse>> getMyProblems(Authentication authentication) throws Exception {
+    public ResponseEntity<List<DefaultProblemResponse>> getMyProblems(Authentication authentication) throws Exception {
         String username = authentication.getName();
-        List<ProblemResponse> responses = problemService.getMyProblems(username);
+        List<DefaultProblemResponse> responses = problemService.getMyProblems(username);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<List<ProblemResponse>> getActiveProblems() {
-        List<ProblemResponse> responses = problemService.getActiveProblems();
+    public ResponseEntity<List<ProblemItemResponse>> getActiveProblems(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        List<ProblemItemResponse> responses = problemService.getActiveProblems(username);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @PutMapping("/active/{problemId}")
-    public ResponseEntity<ProblemResponse> activateProblem(
+    public ResponseEntity<ProblemDetailResponse> activateProblem(
             @PathVariable Long problemId,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        ProblemResponse problemResponse = problemService.activeProblem(problemId, username);
-        return new ResponseEntity<>(problemResponse,HttpStatus.OK);
+        ProblemDetailResponse problemDetailResponse = problemService.activeProblem(problemId, username);
+        return new ResponseEntity<>(problemDetailResponse,HttpStatus.OK);
     }
 
     @DeleteMapping("/{problemId}")

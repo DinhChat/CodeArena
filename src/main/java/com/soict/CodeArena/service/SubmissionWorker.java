@@ -1,5 +1,7 @@
 package com.soict.CodeArena.service;
 
+import com.soict.CodeArena.component.JudgeExecutor;
+import com.soict.CodeArena.component.SubmissionQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutorService;
