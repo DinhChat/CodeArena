@@ -34,11 +34,11 @@ public class TestcaseServiceImpl implements TestcaseService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public TestcaseResponse createTestcase(Long problemId, TestcaseRequest request, String username) throws Exception {
+    public List<TestcaseResponse> createTestcase(Long problemId, TestcaseRequest request, String username)
+            throws Exception {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Problem Not Found"
-                ));
+                        HttpStatus.NOT_FOUND, "Problem Not Found"));
         User user = userRepository.findByUsername(username);
 
         if (!problem.getCreatedBy().equals(user)) {
@@ -53,7 +53,7 @@ public class TestcaseServiceImpl implements TestcaseService {
         testcase.setOrderIndex(request.getOrderIndex());
 
         Testcase savedTestcase = testcaseRepository.save(testcase);
-        return convertToResponse(savedTestcase);
+        return List.of(convertToResponse(savedTestcase));
     }
 
     @Override
@@ -61,14 +61,12 @@ public class TestcaseServiceImpl implements TestcaseService {
     public TestcaseResponse updateTestcase(Long testcaseId, TestcaseRequest request, String username) throws Exception {
         Testcase testcase = testcaseRepository.findById(testcaseId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Testcase Not Found"
-                ));
+                        HttpStatus.NOT_FOUND, "Testcase Not Found"));
         User user = userRepository.findByUsername(username);
 
         if (!testcase.getProblem().getCreatedBy().equals(user)) {
             throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN, "Cannot update Testcase for not your Problem."
-            );
+                    HttpStatus.FORBIDDEN, "Cannot update Testcase for not your Problem.");
         }
 
         testcase.setInput(request.getInput());
@@ -100,13 +98,11 @@ public class TestcaseServiceImpl implements TestcaseService {
         User user = userRepository.findByUsername(username);
         Testcase testcase = testcaseRepository.findById(testcaseId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Testcase Not Found"
-                ));
+                        HttpStatus.NOT_FOUND, "Testcase Not Found"));
 
         if (!testcase.getProblem().getCreatedBy().equals(user)) {
             throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN, "Cannot delete Testcase for not your Problem."
-            );
+                    HttpStatus.FORBIDDEN, "Cannot delete Testcase for not your Problem.");
         }
         testcaseRepository.delete(testcase);
     }

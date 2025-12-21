@@ -22,12 +22,12 @@ public class TestcaseController {
     }
 
     @PostMapping("/problem/{problemId}")
-    public ResponseEntity<TestcaseResponse> createTestcase(
+    public ResponseEntity<List<TestcaseResponse>> createTestcase(
             @PathVariable Long problemId,
             @RequestBody TestcaseRequest request,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        TestcaseResponse response = testcaseService.createTestcase(problemId, request, username);
+        List<TestcaseResponse> response = testcaseService.createTestcase(problemId, request, username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

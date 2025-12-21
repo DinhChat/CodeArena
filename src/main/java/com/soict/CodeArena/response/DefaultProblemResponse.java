@@ -7,6 +7,7 @@ import lombok.Data;
 public class DefaultProblemResponse {
     private Long problemId;
     private String title;
+    private String problemCode;
     private DIFFICULTY_LEVEL difficultyLevel;
     private boolean isActive;
 }

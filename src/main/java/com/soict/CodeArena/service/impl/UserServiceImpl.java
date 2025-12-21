@@ -31,7 +31,8 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public void setUserRepository(UserRepository userRepository, UserProfileRepository userProfileRepository, PasswordEncoder passwordEncoder) {
+    public void setUserRepository(UserRepository userRepository, UserProfileRepository userProfileRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userProfileRepository = userProfileRepository;
@@ -42,8 +43,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByUsername(registerRequest.getUsername()) != null) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Username already exists"
-            );
+                    "Username already exists");
         }
 
         User user = new User();
@@ -61,24 +61,22 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Invalid username or password"
-            );
+                    "Invalid username or password");
         }
 
         if (!passwordEncoder.matches(
                 loginRequest.getPassword(),
-                user.getHashedPassword()
-        )) {
+                user.getHashedPassword())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Invalid username or password"
-            );
+                    "Invalid username or password");
         }
 
         return user;
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('MANAGER')")
     public List<UserManagerResponse> findAllUsers() {
         List<User> users = userRepository.findAll();
         if (users.isEmpty()) {
@@ -157,8 +155,7 @@ public class UserServiceImpl implements UserService {
                 userProfile.getPhone(),
                 userProfile.getGithub(),
                 userProfile.getFacebook(),
-                userProfile.getBirthday()
-        );
+                userProfile.getBirthday());
     }
 
     @Override
@@ -194,7 +191,6 @@ public class UserServiceImpl implements UserService {
                 saved.getPhone(),
                 saved.getGithub(),
                 saved.getFacebook(),
-                saved.getBirthday()
-        );
+                saved.getBirthday());
     }
 }
