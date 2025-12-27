@@ -1,5 +1,6 @@
 # CodeArena
 ## Cấu hình ban đầu mariadb để chạy code arena:
+phiên bản mariadb: 10.x
 mysql -u root -p => nhập mật khẩu root
 ```bash
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'codeArena@#2025';
@@ -20,3 +21,4 @@ SET role = 2
 WHERE user_id = <id_cua_user>;
 ```
 - Từ root user MANAGER có thể cấp role ADMIN cho các user thuờng.
+- User muốn được làm Admin sẽ gửi yêu cầu đến hệ thống
