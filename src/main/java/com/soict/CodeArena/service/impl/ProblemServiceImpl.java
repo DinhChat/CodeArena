@@ -215,6 +215,7 @@ public class ProblemServiceImpl implements ProblemService {
         res.setProblemId(problem.getProblemId());
         res.setTitle(problem.getTitle());
         res.setDifficultyLevel(problem.getDifficultyLevel());
+        res.setActive(problem.isActive());
         return res;
     }
 }
