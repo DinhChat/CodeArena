@@ -34,8 +34,8 @@ public class TestcaseServiceImpl implements TestcaseService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public List<TestcaseResponse> createTestcase(Long problemId, TestcaseRequest request, String username)
-            throws Exception {
+    public List<TestcaseResponse> createTestcase(Long problemId, List<TestcaseRequest> requests, String username)
+            throws ResponseStatusException {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Problem Not Found"));
@@ -45,20 +45,27 @@ public class TestcaseServiceImpl implements TestcaseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot create Testcase for not your Problem.");
         }
 
-        Testcase testcase = new Testcase();
-        testcase.setProblem(problem);
-        testcase.setInput(request.getInput());
-        testcase.setExpectedOutput(request.getExpectedOutput());
-        testcase.setSample(request.isSample());
-        testcase.setOrderIndex(request.getOrderIndex());
+        List<Testcase> testcases = requests.stream()
+                .map(req -> {
+                    Testcase tc = new Testcase();
+                    tc.setProblem(problem);
+                    tc.setInput(req.getInput());
+                    tc.setExpectedOutput(req.getExpectedOutput());
+                    tc.setSample(req.isSample());
+                    tc.setOrderIndex(req.getOrderIndex());
+                    return tc;
+                })
+                .toList();
 
-        Testcase savedTestcase = testcaseRepository.save(testcase);
-        return List.of(convertToResponse(savedTestcase));
+        List<Testcase> savedTestcases = testcaseRepository.saveAll(testcases);
+        return savedTestcases.stream()
+                .map(this::convertToResponse)
+                .toList();
     }
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public TestcaseResponse updateTestcase(Long testcaseId, TestcaseRequest request, String username) throws Exception {
+    public TestcaseResponse updateTestcase(Long testcaseId, TestcaseRequest request, String username) throws ResponseStatusException {
         Testcase testcase = testcaseRepository.findById(testcaseId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Testcase Not Found"));
@@ -94,7 +101,7 @@ public class TestcaseServiceImpl implements TestcaseService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public void deleteTestcase(Long testcaseId, String username) throws Exception {
+    public void deleteTestcase(Long testcaseId, String username) throws ResponseStatusException {
         User user = userRepository.findByUsername(username);
         Testcase testcase = testcaseRepository.findById(testcaseId)
                 .orElseThrow(() -> new ResponseStatusException(

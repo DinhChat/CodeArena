@@ -1,5 +1,6 @@
 package com.soict.CodeArena.controller;
 
+import com.soict.CodeArena.request.CreateTestcasesRequest;
 import com.soict.CodeArena.request.TestcaseRequest;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
@@ -24,10 +25,10 @@ public class TestcaseController {
     @PostMapping("/problem/{problemId}")
     public ResponseEntity<List<TestcaseResponse>> createTestcase(
             @PathVariable Long problemId,
-            @RequestBody TestcaseRequest request,
+            @RequestBody CreateTestcasesRequest request,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        List<TestcaseResponse> response = testcaseService.createTestcase(problemId, request, username);
+        List<TestcaseResponse> response = testcaseService.createTestcase(problemId, request.getTestcases(), username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
