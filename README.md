@@ -21,4 +21,4 @@ SET role = 2
 WHERE user_id = <id_cua_user>;
 ```
 - Từ root user MANAGER có thể cấp role ADMIN cho các user thuờng.
-- User muốn được làm Admin sẽ gửi yêu cầu đến hệ thống
+- User muốn được làm Admin sẽ gửi yêu cầu đến hệ thống để Manager xác nhận.
