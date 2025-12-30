@@ -52,7 +52,12 @@ public class UserServiceImpl implements UserService {
         user.setRole(USER_ROLE.USER);
         user.setCreatedDate(LocalDateTime.now());
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        UserProfile userProfile = new UserProfile();
+        userProfile.setUser(user);
+        userProfileRepository.save(userProfile);
+
+        return savedUser;
     }
 
     @Override

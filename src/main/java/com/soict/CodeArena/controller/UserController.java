@@ -40,8 +40,8 @@ public class UserController {
         return new ResponseEntity<>(userService.updateProfile(req, username), HttpStatus.OK);
     }
 
-    @GetMapping("/{role}")
-    public ResponseEntity<List<UserManagerResponse>> getAllUsersByRole(@PathVariable("role") USER_ROLE role) throws Exception {
+    @GetMapping("/role/{role}")
+    public ResponseEntity<List<UserManagerResponse>> getAllUsersByRole(@PathVariable USER_ROLE role) throws Exception {
         return new ResponseEntity<>(userService.findAllUsersByRole(role), HttpStatus.OK);
     }
 
@@ -54,7 +54,7 @@ public class UserController {
 
     @DeleteMapping("/{uid}")
     public ResponseEntity<UserManagerResponse> deleteUser(
-            @PathVariable("uid") Long uid
+            @PathVariable Long uid
     ) throws Exception {
         return new ResponseEntity<>(userService.deleteUserById(uid), HttpStatus.OK);
     }
