@@ -7,8 +7,13 @@ import com.soict.CodeArena.repository.ProblemRepository;
 import com.soict.CodeArena.repository.TestcaseRepository;
 import com.soict.CodeArena.repository.UserRepository;
 import com.soict.CodeArena.request.TestcaseRequest;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -79,17 +84,65 @@ public class TestcaseServiceImpl implements TestcaseService {
     }
 
     @Override
-    public List<TestcaseResponse> getAllTestcasesByProblem(Long problemId) {
-        return testcaseRepository.findByProblem_ProblemIdOrderByOrderIndexAsc(problemId).stream()
+    public PagedResponse<TestcaseResponse> getAllTestcasesByProblem(Long problemId, Integer page, Integer pageSize,
+            Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
+
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("orderIndex").ascending());
+        Page<Testcase> testcasePage = testcaseRepository.findByProblem_ProblemId(problemId, pageable);
+
+        List<TestcaseResponse> responses = testcasePage.getContent().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                testcasePage.getNumber(),
+                testcasePage.getSize(),
+                testcasePage.getTotalElements(),
+                testcasePage.getTotalPages(),
+                testcasePage.isLast(),
+                testcasePage.isFirst());
     }
 
     @Override
-    public List<TestcaseResponse> getSampleTestcasesByProblem(Long problemId) {
-        return testcaseRepository.findByProblem_ProblemIdAndIsSampleTrue(problemId).stream()
+    public PagedResponse<TestcaseResponse> getSampleTestcasesByProblem(Long problemId, Integer page, Integer pageSize,
+            Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
+
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("orderIndex").ascending());
+        Page<Testcase> testcasePage = testcaseRepository.findByProblem_ProblemIdAndIsSampleTrue(problemId, pageable);
+
+        List<TestcaseResponse> responses = testcasePage.getContent().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                testcasePage.getNumber(),
+                testcasePage.getSize(),
+                testcasePage.getTotalElements(),
+                testcasePage.getTotalPages(),
+                testcasePage.isLast(),
+                testcasePage.isFirst());
     }
 
     @Override

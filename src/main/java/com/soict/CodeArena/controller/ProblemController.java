@@ -2,6 +2,7 @@ package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.request.ProblemRequest;
 import com.soict.CodeArena.response.DefaultProblemResponse;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.ProblemItemResponse;
 import com.soict.CodeArena.response.ProblemDetailResponse;
 import com.soict.CodeArena.service.ProblemService;
@@ -55,16 +56,26 @@ public class ProblemController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<DefaultProblemResponse>> getMyProblems(Authentication authentication) throws Exception {
+    public ResponseEntity<PagedResponse<DefaultProblemResponse>> getMyProblems(
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws Exception {
         String username = authentication.getName();
-        List<DefaultProblemResponse> responses = problemService.getMyProblems(username);
+        PagedResponse<DefaultProblemResponse> responses = problemService.getMyProblems(username, page, pageSize,
+                offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<List<ProblemItemResponse>> getActiveProblems(Authentication authentication) throws Exception {
+    public ResponseEntity<PagedResponse<ProblemItemResponse>> getActiveProblems(
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws Exception {
         String username = authentication.getName();
-        List<ProblemItemResponse> responses = problemService.getActiveProblems(username);
+        PagedResponse<ProblemItemResponse> responses = problemService.getActiveProblems(username, page, pageSize,
+                offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
@@ -74,7 +85,7 @@ public class ProblemController {
             Authentication authentication) throws Exception {
         String username = authentication.getName();
         ProblemDetailResponse problemDetailResponse = problemService.activeProblem(problemId, username);
-        return new ResponseEntity<>(problemDetailResponse,HttpStatus.OK);
+        return new ResponseEntity<>(problemDetailResponse, HttpStatus.OK);
     }
 
     @DeleteMapping("/{problemId}")

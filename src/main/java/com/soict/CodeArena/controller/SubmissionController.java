@@ -2,6 +2,7 @@ package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.request.SubmissionRequest;
 import com.soict.CodeArena.response.DefaultSubmissionResponse;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.SubmissionDetailResponse;
 import com.soict.CodeArena.response.SubmissionItemResponse;
 import com.soict.CodeArena.service.SubmissionService;
@@ -42,19 +43,27 @@ public class SubmissionController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<DefaultSubmissionResponse>> getAllMySubmissions(
-            Authentication authentication) throws Exception {
+    public ResponseEntity<PagedResponse<DefaultSubmissionResponse>> getAllMySubmissions(
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws Exception {
         String username = authentication.getName();
-        List<DefaultSubmissionResponse> responses = submissionService.getMySubmissions(username);
+        PagedResponse<DefaultSubmissionResponse> responses = submissionService.getMySubmissions(username, page,
+                pageSize, offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @GetMapping("/user/problem/{problemId}")
-    public ResponseEntity<List<SubmissionItemResponse>> getSubmissionsByUserAndProblem(
+    public ResponseEntity<PagedResponse<SubmissionItemResponse>> getSubmissionsByUserAndProblem(
             @PathVariable Long problemId,
-            Authentication authentication) throws Exception {
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws Exception {
         String username = authentication.getName();
-        List<SubmissionItemResponse> responses = submissionService.getSubmissionsByUserAndProblem(username, problemId);
+        PagedResponse<SubmissionItemResponse> responses = submissionService.getSubmissionsByUserAndProblem(username,
+                problemId, page, pageSize, offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

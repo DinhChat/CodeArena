@@ -1,6 +1,7 @@
 package com.soict.CodeArena.service;
 
 import com.soict.CodeArena.request.TestcaseRequest;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.TestcaseResponse;
 
 import java.util.List;
@@ -10,9 +11,11 @@ public interface TestcaseService {
 
     TestcaseResponse updateTestcase(Long testcaseId, TestcaseRequest request, String username) throws Exception;
 
-    List<TestcaseResponse> getAllTestcasesByProblem(Long problemId);
+    PagedResponse<TestcaseResponse> getAllTestcasesByProblem(Long problemId, Integer page, Integer pageSize,
+            Integer offset);
 
-    List<TestcaseResponse> getSampleTestcasesByProblem(Long problemId);
+    PagedResponse<TestcaseResponse> getSampleTestcasesByProblem(Long problemId, Integer page, Integer pageSize,
+            Integer offset);
 
     void deleteTestcase(Long testcaseId, String username) throws Exception;
 }

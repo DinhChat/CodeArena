@@ -2,6 +2,8 @@ package com.soict.CodeArena.repository;
 
 import com.soict.CodeArena.model.USER_ROLE;
 import com.soict.CodeArena.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByUsername(String username);
 
-    List<User> findAllByRole(USER_ROLE role);
+    Page<User> findAllByRole(USER_ROLE role, Pageable pageable);
 
     User findUserByUserId(Long userId);
 }

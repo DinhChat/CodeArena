@@ -10,10 +10,15 @@ import com.soict.CodeArena.request.LoginRequest;
 import com.soict.CodeArena.request.ManageAdminRequest;
 import com.soict.CodeArena.request.RegisterRequest;
 import com.soict.CodeArena.request.UserProfileRequest;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
 import com.soict.CodeArena.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -77,36 +83,74 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('MANAGER')")
-    public List<UserManagerResponse> findAllUsers() {
-        List<User> users = userRepository.findAll();
-        if (users.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    public PagedResponse<UserManagerResponse> findAllUsers(Integer page, Integer pageSize, Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
+
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
         }
-        List<UserManagerResponse> userManagerResponses = new ArrayList<>();
-        users.forEach(user -> {
-            UserManagerResponse userManagerResponse = new UserManagerResponse();
-            userManagerResponse.setUsername(user.getUsername());
-            userManagerResponse.setRole(USER_ROLE.USER);
-            userManagerResponses.add(userManagerResponse);
-        });
-        return userManagerResponses;
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").descending());
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        List<UserManagerResponse> responses = userPage.getContent().stream()
+                .map(user -> {
+                    UserManagerResponse response = new UserManagerResponse();
+                    response.setUsername(user.getUsername());
+                    response.setRole(user.getRole());
+                    return response;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast(),
+                userPage.isFirst());
     }
 
     @Override
-    public List<UserManagerResponse> findAllUsersByRole(USER_ROLE role) {
-        List<User> users = userRepository.findAllByRole(role);
-        if (users.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    public PagedResponse<UserManagerResponse> findAllUsersByRole(USER_ROLE role, Integer page, Integer pageSize,
+            Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
+
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
         }
 
-        List<UserManagerResponse> userManagerResponses = new ArrayList<>();
-        users.forEach(user -> {
-            UserManagerResponse userManagerResponse = new UserManagerResponse();
-            userManagerResponse.setUsername(user.getUsername());
-            userManagerResponse.setRole(user.getRole());
-            userManagerResponses.add(userManagerResponse);
-        });
-        return userManagerResponses;
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").descending());
+        Page<User> userPage = userRepository.findAllByRole(role, pageable);
+
+        List<UserManagerResponse> responses = userPage.getContent().stream()
+                .map(user -> {
+                    UserManagerResponse response = new UserManagerResponse();
+                    response.setUsername(user.getUsername());
+                    response.setRole(user.getRole());
+                    return response;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast(),
+                userPage.isFirst());
     }
 
     @Override

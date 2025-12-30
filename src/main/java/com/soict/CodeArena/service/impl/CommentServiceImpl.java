@@ -7,9 +7,14 @@ import com.soict.CodeArena.repository.CommentRepository;
 import com.soict.CodeArena.repository.ProblemRepository;
 import com.soict.CodeArena.request.CommentRequest;
 import com.soict.CodeArena.response.CommentResponse;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.service.CommentService;
 import com.soict.CodeArena.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -85,13 +90,35 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentResponse> getCommentsByProblem(Long problemId) {
-        List<Comment> comments = commentRepository
-                .findByProblem_ProblemIdAndIsDeletedFalseAndParentCommentIsNullOrderByCreatedDateDesc(problemId);
+    public PagedResponse<CommentResponse> getCommentsByProblem(Long problemId, Integer page, Integer pageSize,
+            Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
 
-        return comments.stream()
-                .map(comment -> convertToResponse(comment, true)) // Load replies
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").descending());
+        Page<Comment> commentPage = commentRepository
+                .findByProblem_ProblemIdAndIsDeletedFalseAndParentCommentIsNull(problemId, pageable);
+
+        List<CommentResponse> responses = commentPage.getContent().stream()
+                .map(comment -> convertToResponse(comment, true))
                 .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                commentPage.getNumber(),
+                commentPage.getSize(),
+                commentPage.getTotalElements(),
+                commentPage.getTotalPages(),
+                commentPage.isLast(),
+                commentPage.isFirst());
     }
 
     @Override
@@ -107,23 +134,67 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentResponse> getCommentsByUser(Long userId) {
-        List<Comment> comments = commentRepository
-                .findByUser_UserIdAndIsDeletedFalseOrderByCreatedDateDesc(userId);
+    public PagedResponse<CommentResponse> getCommentsByUser(Long userId, Integer page, Integer pageSize,
+            Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
 
-        return comments.stream()
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").descending());
+        Page<Comment> commentPage = commentRepository
+                .findByUser_UserIdAndIsDeletedFalse(userId, pageable);
+
+        List<CommentResponse> responses = commentPage.getContent().stream()
                 .map(comment -> convertToResponse(comment, false))
                 .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                commentPage.getNumber(),
+                commentPage.getSize(),
+                commentPage.getTotalElements(),
+                commentPage.getTotalPages(),
+                commentPage.isLast(),
+                commentPage.isFirst());
     }
 
     @Override
-    public List<CommentResponse> getRepliesByComment(Long commentId) {
-        List<Comment> replies = commentRepository
-                .findByParentComment_CommentIdAndIsDeletedFalseOrderByCreatedDateAsc(commentId);
+    public PagedResponse<CommentResponse> getRepliesByComment(Long commentId, Integer page, Integer pageSize,
+            Integer offset) {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
 
-        return replies.stream()
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").ascending());
+        Page<Comment> commentPage = commentRepository
+                .findByParentComment_CommentIdAndIsDeletedFalse(commentId, pageable);
+
+        List<CommentResponse> responses = commentPage.getContent().stream()
                 .map(reply -> convertToResponse(reply, false))
                 .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                commentPage.getNumber(),
+                commentPage.getSize(),
+                commentPage.getTotalElements(),
+                commentPage.getTotalPages(),
+                commentPage.isLast(),
+                commentPage.isFirst());
     }
 
     private CommentResponse convertToResponse(Comment comment, boolean includeReplies) {
@@ -140,7 +211,8 @@ public class CommentServiceImpl implements CommentService {
         response.setUpdatedDate(comment.getUpdatedDate());
 
         if (includeReplies) {
-            List<CommentResponse> replies = getRepliesByComment(comment.getCommentId());
+            List<CommentResponse> replies = getRepliesByComment(comment.getCommentId(), null, null, null)
+                    .getContent();
             response.setReplies(replies);
             response.setReplyCount(replies.size());
         }

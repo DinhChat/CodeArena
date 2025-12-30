@@ -2,6 +2,7 @@ package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.request.CommentRequest;
 import com.soict.CodeArena.response.CommentResponse;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,9 +49,13 @@ public class CommentController {
     }
 
     @GetMapping("/problem/{problemId}")
-    public ResponseEntity<List<CommentResponse>> getCommentsByProblem(
-            @PathVariable Long problemId) {
-        List<CommentResponse> comments = commentService.getCommentsByProblem(problemId);
+    public ResponseEntity<PagedResponse<CommentResponse>> getCommentsByProblem(
+            @PathVariable Long problemId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) {
+        PagedResponse<CommentResponse> comments = commentService.getCommentsByProblem(problemId, page, pageSize,
+                offset);
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
@@ -62,16 +67,22 @@ public class CommentController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CommentResponse>> getCommentsByUser(
-            @PathVariable Long userId) {
-        List<CommentResponse> comments = commentService.getCommentsByUser(userId);
+    public ResponseEntity<PagedResponse<CommentResponse>> getCommentsByUser(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) {
+        PagedResponse<CommentResponse> comments = commentService.getCommentsByUser(userId, page, pageSize, offset);
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
     @GetMapping("/{commentId}/replies")
-    public ResponseEntity<List<CommentResponse>> getRepliesByComment(
-            @PathVariable Long commentId) {
-        List<CommentResponse> replies = commentService.getRepliesByComment(commentId);
+    public ResponseEntity<PagedResponse<CommentResponse>> getRepliesByComment(
+            @PathVariable Long commentId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) {
+        PagedResponse<CommentResponse> replies = commentService.getRepliesByComment(commentId, page, pageSize, offset);
         return new ResponseEntity<>(replies, HttpStatus.OK);
     }
 }

@@ -2,6 +2,7 @@ package com.soict.CodeArena.service;
 
 import com.soict.CodeArena.request.CommentRequest;
 import com.soict.CodeArena.response.CommentResponse;
+import com.soict.CodeArena.response.PagedResponse;
 
 import java.util.List;
 
@@ -13,11 +14,11 @@ public interface CommentService {
 
     void deleteComment(Long commentId, String username) throws Exception;
 
-    List<CommentResponse> getCommentsByProblem(Long problemId);
+    PagedResponse<CommentResponse> getCommentsByProblem(Long problemId, Integer page, Integer pageSize, Integer offset);
 
     CommentResponse getCommentById(Long commentId) throws Exception;
 
-    List<CommentResponse> getCommentsByUser(Long userId);
+    PagedResponse<CommentResponse> getCommentsByUser(Long userId, Integer page, Integer pageSize, Integer offset);
 
-    List<CommentResponse> getRepliesByComment(Long commentId);
+    PagedResponse<CommentResponse> getRepliesByComment(Long commentId, Integer page, Integer pageSize, Integer offset);
 }
