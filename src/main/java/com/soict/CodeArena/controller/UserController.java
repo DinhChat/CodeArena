@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<UserProfileResponse> updateUserProfile(UserProfileRequest req, Authentication authentication)
+    public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestBody UserProfileRequest req, Authentication authentication)
             throws Exception {
         String username = authentication.getName();
         return new ResponseEntity<>(userService.updateProfile(req, username), HttpStatus.OK);

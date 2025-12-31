@@ -193,8 +193,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserProfileResponse GetUserProfile(String username) throws Exception {
         User user = userRepository.findByUsername(username);
-        UserProfile userProfile = userProfileRepository.findUserProfileByUser(user)
-                .orElseThrow(() -> new Exception("User not found"));
+        UserProfile userProfile = userProfileRepository
+                .findByUser_UserId(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
 
         return new UserProfileResponse(
                 userProfile.getFullName(),
@@ -215,7 +216,7 @@ public class UserServiceImpl implements UserService {
         }
 
         UserProfile profile = userProfileRepository
-                .findUserProfileByUser(user)
+                .findByUser_UserId(user.getUserId())
                 .orElseGet(() -> {
                     UserProfile p = new UserProfile();
                     p.setUser(user);
