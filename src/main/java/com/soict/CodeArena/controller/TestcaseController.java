@@ -2,6 +2,7 @@ package com.soict.CodeArena.controller;
 
 import com.soict.CodeArena.request.CreateTestcasesRequest;
 import com.soict.CodeArena.request.TestcaseRequest;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.TestcaseResponse;
 import com.soict.CodeArena.service.TestcaseService;
 import org.springframework.http.HttpStatus;
@@ -43,14 +44,24 @@ public class TestcaseController {
     }
 
     @GetMapping("/problem/{problemId}")
-    public ResponseEntity<List<TestcaseResponse>> getAllTestcasesByProblem(@PathVariable Long problemId) {
-        List<TestcaseResponse> responses = testcaseService.getAllTestcasesByProblem(problemId);
+    public ResponseEntity<PagedResponse<TestcaseResponse>> getAllTestcasesByProblem(
+            @PathVariable Long problemId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) {
+        PagedResponse<TestcaseResponse> responses = testcaseService.getAllTestcasesByProblem(problemId, page, pageSize,
+                offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @GetMapping("/problem/{problemId}/samples")
-    public ResponseEntity<List<TestcaseResponse>> getSampleTestcasesByProblem(@PathVariable Long problemId) {
-        List<TestcaseResponse> responses = testcaseService.getSampleTestcasesByProblem(problemId);
+    public ResponseEntity<PagedResponse<TestcaseResponse>> getSampleTestcasesByProblem(
+            @PathVariable Long problemId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) {
+        PagedResponse<TestcaseResponse> responses = testcaseService.getSampleTestcasesByProblem(problemId, page,
+                pageSize, offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 

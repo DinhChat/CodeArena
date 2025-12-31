@@ -63,7 +63,8 @@ public class JudgeExecutor {
 
     public void runSubmission(Long submissionId) {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
-        if (submission == null) return;
+        if (submission == null)
+            return;
 
         submission.setStatus(SUBMISSION_STATUS.RUNNING);
         submissionRepository.save(submission);
@@ -73,11 +74,11 @@ public class JudgeExecutor {
             Problem problem = submission.getProblem();
 
             List<Testcase> testcases = testcaseRepository
-                .findByProblem_ProblemIdOrderByOrderIndexAsc(problem.getProblemId());
+                    .findByProblem_ProblemIdOrderByOrderIndexAsc(problem.getProblemId());
 
             List<TestCaseDTO> testcaseDTOs = testcases.stream()
-                .map(tc -> new TestCaseDTO(tc.getInput(), tc.getExpectedOutput()))
-                .toList();
+                    .map(tc -> new TestCaseDTO(tc.getInput(), tc.getExpectedOutput()))
+                    .toList();
 
             SubmissionPayload payload = new SubmissionPayload();
             payload.setSubmissionCode(submission.getCode());
@@ -93,10 +94,10 @@ public class JudgeExecutor {
             HttpEntity<SubmissionPayload> entity = new HttpEntity<>(payload, headers);
 
             ResponseEntity<SandboxResponse> response = restTemplate.exchange(
-                sandboxUrl + "/submissions/run",
-                HttpMethod.POST,
-                entity,
-                SandboxResponse.class);
+                    sandboxUrl + "/submissions/run",
+                    HttpMethod.POST,
+                    entity,
+                    SandboxResponse.class);
 
             SandboxResponse sandboxResponse = response.getBody();
 
@@ -112,26 +113,26 @@ public class JudgeExecutor {
                     testcaseResults.add(testcaseResult);
                 }
 
-                    submission.setExecutionTime(
+                submission.setExecutionTime(
                         (int) results.stream()
-                            .mapToDouble(r -> r.getTimeTaken() != null
-                                ? r.getTimeTaken()
-                                : 0)
-                            .sum());
+                                .mapToDouble(r -> r.getTimeTaken() != null
+                                        ? r.getTimeTaken()
+                                        : 0)
+                                .sum());
 
-                    submission.setMemoryUsed(
+                submission.setMemoryUsed(
                         results.stream()
-                            .mapToInt(r -> r.getMemoryUsed() != null
-                                ? r.getMemoryUsed()
-                                : 0)
-                            .max()
-                            .orElse(0));
+                                .mapToInt(r -> r.getMemoryUsed() != null
+                                        ? r.getMemoryUsed()
+                                        : 0)
+                                .max()
+                                .orElse(0));
 
-                    submission.setErrorMessage(meta.getCompilationError());
-                    submission.setStatus(
+                submission.setErrorMessage(meta.getCompilationError());
+                submission.setStatus(
                         meta.getAllPassed()
-                            ? SUBMISSION_STATUS.ACCEPTED
-                            : SUBMISSION_STATUS.WRONG_ANSWER);
+                                ? SUBMISSION_STATUS.ACCEPTED
+                                : SUBMISSION_STATUS.WRONG_ANSWER);
 
             } else {
                 submission.setStatus(SUBMISSION_STATUS.RUNTIME_ERROR);

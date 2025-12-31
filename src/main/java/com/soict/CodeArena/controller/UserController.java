@@ -3,6 +3,7 @@ package com.soict.CodeArena.controller;
 import com.soict.CodeArena.model.USER_ROLE;
 import com.soict.CodeArena.request.ManageAdminRequest;
 import com.soict.CodeArena.request.UserProfileRequest;
+import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
 import com.soict.CodeArena.service.UserService;
@@ -25,8 +26,11 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<UserManagerResponse>> getAllUser() throws Exception {
-        return new ResponseEntity<>(userService.findAllUsers(), HttpStatus.OK);
+    public ResponseEntity<PagedResponse<UserManagerResponse>> getAllUser(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws Exception {
+        return new ResponseEntity<>(userService.findAllUsers(page, pageSize, offset), HttpStatus.OK);
     }
 
     @GetMapping("/{username}")
@@ -35,14 +39,19 @@ public class UserController {
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<UserProfileResponse> updateUserProfile(UserProfileRequest req, Authentication authentication) throws Exception{
+    public ResponseEntity<UserProfileResponse> updateUserProfile(UserProfileRequest req, Authentication authentication)
+            throws Exception {
         String username = authentication.getName();
         return new ResponseEntity<>(userService.updateProfile(req, username), HttpStatus.OK);
     }
 
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<UserManagerResponse>> getAllUsersByRole(@PathVariable USER_ROLE role) throws Exception {
-        return new ResponseEntity<>(userService.findAllUsersByRole(role), HttpStatus.OK);
+    public ResponseEntity<PagedResponse<UserManagerResponse>> getAllUsersByRole(
+            @PathVariable USER_ROLE role,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws Exception {
+        return new ResponseEntity<>(userService.findAllUsersByRole(role, page, pageSize, offset), HttpStatus.OK);
     }
 
     @PutMapping("/manage")
