@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class TestcaseController {
     public ResponseEntity<List<TestcaseResponse>> createTestcase(
             @PathVariable Long problemId,
             @RequestBody CreateTestcasesRequest request,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         List<TestcaseResponse> response = testcaseService.createTestcase(problemId, request.getTestcases(), username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -37,7 +38,7 @@ public class TestcaseController {
     public ResponseEntity<TestcaseResponse> updateTestcase(
             @PathVariable Long testcaseId,
             @RequestBody TestcaseRequest request,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         TestcaseResponse response = testcaseService.updateTestcase(testcaseId, request, username);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -68,7 +69,7 @@ public class TestcaseController {
     @DeleteMapping("/{testcaseId}")
     public ResponseEntity<String> deleteTestcase(
             @PathVariable Long testcaseId,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         testcaseService.deleteTestcase(testcaseId, username);
         return new ResponseEntity<>("Testcase deleted successfully", HttpStatus.OK);

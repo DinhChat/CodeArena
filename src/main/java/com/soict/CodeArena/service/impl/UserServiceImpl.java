@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User loginUser(LoginRequest loginRequest) {
+    public User loginUser(LoginRequest loginRequest) throws ResponseStatusException {
         User user = userRepository.findByUsername(loginRequest.getUsername());
         if (user == null) {
             throw new ResponseStatusException(
@@ -160,10 +160,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('MANAGER')")
-    public UserManagerResponse manageAdminRole(ManageAdminRequest req) throws Exception {
+    public UserManagerResponse manageAdminRole(ManageAdminRequest req) throws ResponseStatusException {
         User user = userRepository.findByUsername(req.getUsername());
         if (user == null) {
-            throw new Exception("User not found");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "user not found");
         }
         if (req.getAction() == MANAGER_ACTION.GRANT) {
             user.setRole(USER_ROLE.ADMIN);
@@ -176,26 +178,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('MANAGER')")
-    public UserManagerResponse deleteUserById(Long uid) throws Exception {
+    public UserManagerResponse deleteUserById(Long uid) throws ResponseStatusException {
         User user = userRepository.findUserByUserId(uid);
         if (user == null) {
-            throw new Exception("User not found");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "user not found");
         }
         userRepository.delete(user);
         return new UserManagerResponse(user.getUsername(), user.getRole());
     }
 
     @Override
-    public User findByUsername(String username) throws Exception {
+    public User findByUsername(String username) throws ResponseStatusException {
         return userRepository.findByUsername(username);
     }
 
     @Override
-    public UserProfileResponse GetUserProfile(String username) throws Exception {
+    public UserProfileResponse GetUserProfile(String username) throws ResponseStatusException {
         User user = userRepository.findByUsername(username);
         UserProfile userProfile = userProfileRepository
                 .findByUser_UserId(user.getUserId())
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "user not found"));
 
         return new UserProfileResponse(
                 userProfile.getFullName(),
@@ -209,10 +215,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserProfileResponse updateProfile(UserProfileRequest req, String username) throws Exception {
+    public UserProfileResponse updateProfile(UserProfileRequest req, String username) throws ResponseStatusException {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new Exception("User not found");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "user not found");
         }
 
         UserProfile profile = userProfileRepository

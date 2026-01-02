@@ -51,7 +51,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         }
 
         @Override
-        public SubmissionDetailResponse submitSolution(SubmissionRequest request, String username) throws Exception {
+        public SubmissionDetailResponse submitSolution(SubmissionRequest request, String username) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
                 Problem problem = problemRepository.findById(request.getProblemId())
                                 .orElseThrow(() -> new ResponseStatusException(
@@ -76,7 +76,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         }
 
         @Override
-        public SubmissionDetailResponse getSubmissionById(Long submissionId, String username) throws Exception {
+        public SubmissionDetailResponse getSubmissionById(Long submissionId, String username) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
                 Submission submission = submissionRepository.findById(submissionId)
                                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -89,12 +89,8 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         @Override
         public PagedResponse<DefaultSubmissionResponse> getMySubmissions(String username, Integer page,
-                        Integer pageSize, Integer offset) throws Exception {
+                        Integer pageSize, Integer offset) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
-                if (user == null) {
-                        throw new IllegalStateException("Authenticated user not found");
-                }
-
                 int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
                 int actualPage;
 
@@ -126,7 +122,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         @Override
         public PagedResponse<SubmissionItemResponse> getSubmissionsByUserAndProblem(String username, Long problemId,
-                        Integer page, Integer pageSize, Integer offset) throws Exception {
+                        Integer page, Integer pageSize, Integer offset) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
 
                 int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;

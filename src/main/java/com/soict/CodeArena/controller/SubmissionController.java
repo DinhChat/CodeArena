@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @CrossOrigin
@@ -45,7 +46,7 @@ public class SubmissionController {
             Authentication authentication,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) Integer offset) throws Exception {
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         String username = authentication.getName();
         PagedResponse<DefaultSubmissionResponse> responses = submissionService.getMySubmissions(username, page,
                 pageSize, offset);

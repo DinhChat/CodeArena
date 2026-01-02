@@ -12,8 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/user")
@@ -29,18 +28,18 @@ public class UserController {
     public ResponseEntity<PagedResponse<UserManagerResponse>> getAllUser(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) Integer offset) throws Exception {
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         return new ResponseEntity<>(userService.findAllUsers(page, pageSize, offset), HttpStatus.OK);
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<UserProfileResponse> getUser(@PathVariable String username) throws Exception {
+    public ResponseEntity<UserProfileResponse> getUser(@PathVariable String username) throws ResponseStatusException {
         return new ResponseEntity<>(userService.GetUserProfile(username), HttpStatus.OK);
     }
 
     @PostMapping("/profile")
     public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestBody UserProfileRequest req, Authentication authentication)
-            throws Exception {
+            throws ResponseStatusException {
         String username = authentication.getName();
         return new ResponseEntity<>(userService.updateProfile(req, username), HttpStatus.OK);
     }
@@ -57,14 +56,14 @@ public class UserController {
     @PutMapping("/manage")
     public ResponseEntity<UserManagerResponse> manageUser(
             @RequestBody ManageAdminRequest req
-    ) throws Exception {
+    ) throws ResponseStatusException {
         return new ResponseEntity<>(userService.manageAdminRole(req), HttpStatus.OK);
     }
 
     @DeleteMapping("/{uid}")
     public ResponseEntity<UserManagerResponse> deleteUser(
             @PathVariable Long uid
-    ) throws Exception {
+    ) throws ResponseStatusException {
         return new ResponseEntity<>(userService.deleteUserById(uid), HttpStatus.OK);
     }
 
