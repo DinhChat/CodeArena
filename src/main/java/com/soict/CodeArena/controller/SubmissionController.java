@@ -59,7 +59,7 @@ public class SubmissionController {
             Authentication authentication,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) Integer offset) throws Exception {
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         String username = authentication.getName();
         PagedResponse<SubmissionItemResponse> responses = submissionService.getSubmissionsByUserAndProblem(username,
                 problemId, page, pageSize, offset);

@@ -170,6 +170,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 response.setProblemTitle(submission.getProblem().getTitle());
                 response.setUsername(submission.getCreatedBy().getUsername());
                 response.setLanguage(submission.getLanguage());
+                response.setCode(submission.getCode());
                 response.setStatus(submission.getStatus());
                 response.setExecutionTime(submission.getExecutionTime());
                 response.setMemoryUsed(submission.getMemoryUsed());
