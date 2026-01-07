@@ -16,7 +16,7 @@ public class ScoreController {
         this.scoreService = scoreService;
     }
 
-    @GetMapping("/{adminId}/score")
+    @GetMapping("/{adminId}")
     public Integer getMyScoreInClass(
             @PathVariable Long adminId,
             Authentication authentication
