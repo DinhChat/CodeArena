@@ -224,6 +224,42 @@ public class ProblemServiceImpl implements ProblemService {
         }
     }
 
+    @Override
+    public PagedResponse<ProblemItemResponse> getAllProblemsOfAdmin(Long adminId, String username, Integer page, Integer pageSize, Integer offset) {
+        User user = userService.findByUsername(username);
+
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
+
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").descending());
+        Page<Problem> problemPage = problemRepository.findActiveProblemsByAdmin(adminId, pageable);
+        List<ProblemItemResponse> responses = problemPage.getContent().stream()
+                .map(problem -> {
+                    UserProblemStat stat = userProblemStatRepository
+                            .findByUserAndProblem(user, problem)
+                            .orElse(null);
+                    return convertToItemResponse(problem, stat);
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                problemPage.getNumber(),
+                problemPage.getSize(),
+                problemPage.getTotalElements(),
+                problemPage.getTotalPages(),
+                problemPage.isLast(),
+                problemPage.isFirst());
+    }
+
     private ProblemDetailResponse convertToResponse(Problem problem) {
         ProblemDetailResponse response = new ProblemDetailResponse();
         response.setProblemId(problem.getProblemId());

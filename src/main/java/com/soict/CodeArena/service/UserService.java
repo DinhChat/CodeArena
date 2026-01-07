@@ -7,6 +7,7 @@ import com.soict.CodeArena.request.LoginRequest;
 import com.soict.CodeArena.request.ManageAdminRequest;
 import com.soict.CodeArena.request.RegisterRequest;
 import com.soict.CodeArena.request.UserProfileRequest;
+import com.soict.CodeArena.response.AdminResponse;
 import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
@@ -22,7 +23,7 @@ public interface UserService {
     PagedResponse<UserManagerResponse> findAllUsers(Integer page, Integer pageSize, Integer offset) throws ResponseStatusException;
 
     PagedResponse<UserManagerResponse> findAllUsersByRole(USER_ROLE role, Integer page, Integer pageSize,
-            Integer offset) throws Exception;
+            Integer offset) throws ResponseStatusException;
 
     UserManagerResponse manageAdminRole(ManageAdminRequest req) throws ResponseStatusException;
 
@@ -33,4 +34,6 @@ public interface UserService {
     UserProfileResponse GetUserProfile(String username) throws ResponseStatusException;
 
     UserProfileResponse updateProfile(UserProfileRequest req, String username) throws ResponseStatusException;
+
+    PagedResponse<AdminResponse> getAllClass(Integer page, Integer pageSize, Integer offset) throws ResponseStatusException;
 }

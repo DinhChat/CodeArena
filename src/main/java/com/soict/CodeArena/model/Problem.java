@@ -62,13 +62,4 @@ public class Problem {
     @JsonIgnore
     @ToString.Exclude
     private List<Testcase> testcases = new ArrayList<>();
-
-    @OneToMany(
-            mappedBy = "problem",
-            cascade = CascadeType.REMOVE,
-            orphanRemoval = true
-    )
-    @JsonIgnore
-    @ToString.Exclude
-    private List<UserProblemStat> userProblemStats = new ArrayList<>();
 }

@@ -25,4 +25,5 @@ public interface ProblemService {
             Integer offset) throws ResponseStatusException;
 
     void deleteProblem(Long problemId, String username) throws ResponseStatusException;
+    PagedResponse<ProblemItemResponse> getAllProblemsOfAdmin(Long adminId, String username, Integer page, Integer pageSize, Integer offset);
 }

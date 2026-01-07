@@ -3,6 +3,7 @@ package com.soict.CodeArena.controller;
 import com.soict.CodeArena.model.USER_ROLE;
 import com.soict.CodeArena.request.ManageAdminRequest;
 import com.soict.CodeArena.request.UserProfileRequest;
+import com.soict.CodeArena.response.AdminResponse;
 import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
@@ -49,7 +50,7 @@ public class UserController {
             @PathVariable USER_ROLE role,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) Integer offset) throws Exception {
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         return new ResponseEntity<>(userService.findAllUsersByRole(role, page, pageSize, offset), HttpStatus.OK);
     }
 
@@ -65,6 +66,14 @@ public class UserController {
             @PathVariable Long uid
     ) throws ResponseStatusException {
         return new ResponseEntity<>(userService.deleteUserById(uid), HttpStatus.OK);
+    }
+
+    @GetMapping("/class")
+    public ResponseEntity<PagedResponse<AdminResponse>> getAllClass(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
+        return new ResponseEntity<>(userService.getAllClass(page, pageSize, offset), HttpStatus.OK);
     }
 
 }

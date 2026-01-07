@@ -12,6 +12,7 @@ import com.soict.CodeArena.request.LoginRequest;
 import com.soict.CodeArena.request.ManageAdminRequest;
 import com.soict.CodeArena.request.RegisterRequest;
 import com.soict.CodeArena.request.UserProfileRequest;
+import com.soict.CodeArena.response.AdminResponse;
 import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
@@ -194,7 +195,7 @@ public class UserServiceImpl implements UserService {
                     "user not found");
         }
         userProblemStatRepository.deleteByUser_UserId(uid);
-        problemRepository.deleteByUser_UserId(uid);
+        problemRepository.deleteByCreatedBy_UserId(uid);
         userRepository.delete(user);
         return new UserManagerResponse(user.getUsername(), user.getRole());
     }
@@ -260,5 +261,41 @@ public class UserServiceImpl implements UserService {
                 saved.getGithub(),
                 saved.getFacebook(),
                 saved.getBirthday());
+    }
+
+    @Override
+    public PagedResponse<AdminResponse> getAllClass(Integer page, Integer pageSize, Integer offset) throws ResponseStatusException {
+        int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
+        int actualPage;
+
+        if (offset != null && offset >= 0) {
+            actualPage = offset / actualPageSize;
+        } else if (page != null && page >= 0) {
+            actualPage = page;
+        } else {
+            actualPage = 0;
+        }
+
+        Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("createdDate").descending());
+        Page<User> userPage = userRepository.findAllByRole(USER_ROLE.ADMIN, pageable);
+
+        List<AdminResponse> responses = userPage.getContent().stream()
+                .map(user -> {
+                    AdminResponse response = new AdminResponse();
+                    response.setUserId(user.getUserId());
+                    response.setUsername(user.getUsername());
+                    response.setRole(user.getRole());
+                    return response;
+                })
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                responses,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast(),
+                userPage.isFirst());
     }
 }
