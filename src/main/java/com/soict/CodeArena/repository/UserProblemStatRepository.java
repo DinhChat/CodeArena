@@ -9,4 +9,7 @@ import java.util.Optional;
 
 public interface UserProblemStatRepository extends JpaRepository<UserProblemStat,Long> {
     Optional<UserProblemStat> findByUserAndProblem(User user, Problem problem);
+    void deleteByProblem_ProblemId(Long problemId);
+    void deleteByUser_UserId(Long userId);
+    void deleteBySubmission_SubmissionId(Long submissionId);
 }

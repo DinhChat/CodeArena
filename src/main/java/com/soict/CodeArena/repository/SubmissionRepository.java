@@ -20,4 +20,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     Page<Submission> findByStatus(SUBMISSION_STATUS status, Pageable pageable);
 
     List<Submission> findByProblem_ProblemIdAndCreatedBy_UserIdOrderBySubmittedAtDesc(Long problemId, Long userId);
+
+    void deleteByProblem_ProblemId(Long problemId);
 }

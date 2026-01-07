@@ -3,8 +3,7 @@ package com.soict.CodeArena.service.impl;
 import com.soict.CodeArena.model.Problem;
 import com.soict.CodeArena.model.User;
 import com.soict.CodeArena.model.UserProblemStat;
-import com.soict.CodeArena.repository.ProblemRepository;
-import com.soict.CodeArena.repository.UserProblemStatRepository;
+import com.soict.CodeArena.repository.*;
 import com.soict.CodeArena.request.ProblemRequest;
 import com.soict.CodeArena.response.DefaultProblemResponse;
 import com.soict.CodeArena.response.PagedResponse;
@@ -12,6 +11,7 @@ import com.soict.CodeArena.response.ProblemItemResponse;
 import com.soict.CodeArena.response.ProblemDetailResponse;
 import com.soict.CodeArena.service.ProblemService;
 import com.soict.CodeArena.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,8 +32,10 @@ public class ProblemServiceImpl implements ProblemService {
     private final UserService userService;
     private final UserProblemStatRepository userProblemStatRepository;
 
-    public ProblemServiceImpl(ProblemRepository problemRepository, UserService userService,
-            UserProblemStatRepository userProblemStatRepository) {
+    public ProblemServiceImpl(
+            ProblemRepository problemRepository, UserService userService,
+            UserProblemStatRepository userProblemStatRepository
+    ) {
         this.problemRepository = problemRepository;
         this.userService = userService;
         this.userProblemStatRepository = userProblemStatRepository;
@@ -41,7 +43,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public ProblemDetailResponse createProblem(ProblemRequest request, String username) throws Exception {
+    public ProblemDetailResponse createProblem(ProblemRequest request, String username) throws ResponseStatusException {
         User user = userService.findByUsername(username);
 
         if (problemRepository.findByProblemCode(request.getProblemCode()).isPresent()) {
@@ -71,7 +73,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public ProblemDetailResponse updateProblem(Long problemId, ProblemRequest request, String username)
-            throws Exception {
+            throws ResponseStatusException {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Problem Not Found"));
@@ -99,7 +101,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public ProblemDetailResponse activeProblem(Long problemId, String username) throws Exception {
+    public ProblemDetailResponse activeProblem(Long problemId, String username) throws ResponseStatusException {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Problem Not Found"));
@@ -133,7 +135,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public PagedResponse<DefaultProblemResponse> getMyProblems(String username, Integer page, Integer pageSize,
-            Integer offset) throws Exception {
+            Integer offset) throws ResponseStatusException {
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new IllegalStateException("Authenticated user not found");
@@ -169,7 +171,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public PagedResponse<ProblemItemResponse> getActiveProblems(String username, Integer page, Integer pageSize,
-            Integer offset) throws Exception {
+            Integer offset) throws ResponseStatusException {
         User user = userService.findByUsername(username);
 
         int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
@@ -207,7 +209,8 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public void deleteProblem(Long problemId, String username) throws Exception {
+    @Transactional
+    public void deleteProblem(Long problemId, String username) throws ResponseStatusException {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Problem Not Found"));
@@ -216,6 +219,7 @@ public class ProblemServiceImpl implements ProblemService {
                 .equals(userService.findByUsername(username).getUserId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can't delete this problem");
         } else {
+            userProblemStatRepository.deleteByProblem_ProblemId(problemId);
             problemRepository.deleteById(problemId);
         }
     }

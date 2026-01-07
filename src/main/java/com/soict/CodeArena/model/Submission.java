@@ -1,11 +1,15 @@
 package com.soict.CodeArena.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -35,4 +39,13 @@ public class Submission {
     private Integer totalTestcases;
     private LocalDateTime submittedAt;
     private LocalDateTime judgedAt;
+
+    @OneToMany(
+            mappedBy = "submission",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JsonIgnore
+    @ToString.Exclude
+    private List<TestcaseResult> testcaseResults = new ArrayList<>();
 }

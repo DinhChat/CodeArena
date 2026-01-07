@@ -1,11 +1,15 @@
 package com.soict.CodeArena.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -41,4 +45,30 @@ public class Problem {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private boolean isActive = false;
+    @OneToMany(
+            mappedBy = "problem",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    @JsonIgnore
+    @ToString.Exclude
+    private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "problem",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JsonIgnore
+    @ToString.Exclude
+    private List<Testcase> testcases = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "problem",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    @JsonIgnore
+    @ToString.Exclude
+    private List<UserProblemStat> userProblemStats = new ArrayList<>();
 }

@@ -1,10 +1,7 @@
 package com.soict.CodeArena.service.impl;
 
 import com.soict.CodeArena.model.*;
-import com.soict.CodeArena.repository.ProblemRepository;
-import com.soict.CodeArena.repository.SubmissionRepository;
-import com.soict.CodeArena.repository.TestcaseRepository;
-import com.soict.CodeArena.repository.UserProblemStatRepository;
+import com.soict.CodeArena.repository.*;
 import com.soict.CodeArena.request.SubmissionRequest;
 import com.soict.CodeArena.response.DefaultSubmissionResponse;
 import com.soict.CodeArena.response.PagedResponse;
@@ -34,6 +31,8 @@ public class SubmissionServiceImpl implements SubmissionService {
         private final UserService userService;
         private final UserProblemStatRepository userProblemStatRepository;
         private final SubmissionQueue submissionQueue;
+        private final TestcaseResultRepository testcaseResultRepository;
+
 
         public SubmissionServiceImpl(
                         SubmissionRepository submissionRepository,
@@ -41,13 +40,16 @@ public class SubmissionServiceImpl implements SubmissionService {
                         TestcaseRepository testcaseRepository,
                         UserService userService,
                         UserProblemStatRepository userProblemStatRepository,
-                        SubmissionQueue submissionQueue) {
+                        SubmissionQueue submissionQueue,
+                        TestcaseResultRepository testcaseResultRepository
+                        ) {
                 this.submissionRepository = submissionRepository;
                 this.problemRepository = problemRepository;
                 this.testcaseRepository = testcaseRepository;
                 this.userService = userService;
                 this.userProblemStatRepository = userProblemStatRepository;
                 this.submissionQueue = submissionQueue;
+                this.testcaseResultRepository = testcaseResultRepository;
         }
 
         @Override
@@ -161,6 +163,15 @@ public class SubmissionServiceImpl implements SubmissionService {
                                 submissionPage.getTotalPages(),
                                 submissionPage.isLast(),
                                 submissionPage.isFirst());
+        }
+
+        @Override
+        public void deleteSubmission(Long submissionId) {
+                Submission submission = submissionRepository.findById(submissionId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Submission Not Found"));
+                userProblemStatRepository.deleteBySubmission_SubmissionId(submissionId);
+                submissionRepository.delete(submission);
         }
 
         private SubmissionDetailResponse convertToResponse(Submission submission) {

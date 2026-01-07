@@ -17,4 +17,6 @@ public interface SubmissionService {
 
     PagedResponse<SubmissionItemResponse> getSubmissionsByUserAndProblem(String username, Long problemId, Integer page,
             Integer pageSize, Integer offset) throws ResponseStatusException;
+
+    void deleteSubmission(Long submissionId);
 }

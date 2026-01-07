@@ -5,23 +5,24 @@ import com.soict.CodeArena.response.DefaultProblemResponse;
 import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.ProblemItemResponse;
 import com.soict.CodeArena.response.ProblemDetailResponse;
+import org.springframework.web.server.ResponseStatusException;
 
 public interface ProblemService {
-    ProblemDetailResponse createProblem(ProblemRequest request, String username) throws Exception;
+    ProblemDetailResponse createProblem(ProblemRequest request, String username) throws ResponseStatusException;
 
-    ProblemDetailResponse updateProblem(Long problemId, ProblemRequest request, String username) throws Exception;
+    ProblemDetailResponse updateProblem(Long problemId, ProblemRequest request, String username) throws ResponseStatusException;
 
-    ProblemDetailResponse activeProblem(Long problemId, String username) throws Exception;
+    ProblemDetailResponse activeProblem(Long problemId, String username) throws ResponseStatusException;
 
-    ProblemDetailResponse getProblemById(Long problemId) throws Exception;
+    ProblemDetailResponse getProblemById(Long problemId) throws ResponseStatusException;
 
-    ProblemDetailResponse getProblemByCode(String problemCode) throws Exception;
+    ProblemDetailResponse getProblemByCode(String problemCode) throws ResponseStatusException;
 
     PagedResponse<DefaultProblemResponse> getMyProblems(String username, Integer page, Integer pageSize, Integer offset)
-            throws Exception;
+            throws ResponseStatusException;
 
     PagedResponse<ProblemItemResponse> getActiveProblems(String username, Integer page, Integer pageSize,
-            Integer offset) throws Exception;
+            Integer offset) throws ResponseStatusException;
 
-    void deleteProblem(Long problemId, String username) throws Exception;
+    void deleteProblem(Long problemId, String username) throws ResponseStatusException;
 }

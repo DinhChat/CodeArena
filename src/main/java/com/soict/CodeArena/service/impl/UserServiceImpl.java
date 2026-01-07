@@ -4,6 +4,8 @@ import com.soict.CodeArena.model.MANAGER_ACTION;
 import com.soict.CodeArena.model.USER_ROLE;
 import com.soict.CodeArena.model.User;
 import com.soict.CodeArena.model.UserProfile;
+import com.soict.CodeArena.repository.ProblemRepository;
+import com.soict.CodeArena.repository.UserProblemStatRepository;
 import com.soict.CodeArena.repository.UserProfileRepository;
 import com.soict.CodeArena.repository.UserRepository;
 import com.soict.CodeArena.request.LoginRequest;
@@ -14,7 +16,6 @@ import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.UserManagerResponse;
 import com.soict.CodeArena.response.UserProfileResponse;
 import com.soict.CodeArena.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,22 +27,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private UserRepository userRepository;
-    private UserProfileRepository userProfileRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ProblemRepository problemRepository;
+    private final UserProblemStatRepository userProblemStatRepository;
 
-    @Autowired
-    public void setUserRepository(UserRepository userRepository, UserProfileRepository userProfileRepository,
-            PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            UserProfileRepository userProfileRepository,
+            PasswordEncoder passwordEncoder,
+            ProblemRepository problemRepository,
+            UserProblemStatRepository userProblemStatRepository
+            ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userProfileRepository = userProfileRepository;
+        this.problemRepository = problemRepository;
+        this.userProblemStatRepository = userProblemStatRepository;
     }
 
     @Override
@@ -185,6 +193,8 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.NOT_FOUND,
                     "user not found");
         }
+        userProblemStatRepository.deleteByUser_UserId(uid);
+        problemRepository.deleteByUser_UserId(uid);
         userRepository.delete(user);
         return new UserManagerResponse(user.getUsername(), user.getRole());
     }

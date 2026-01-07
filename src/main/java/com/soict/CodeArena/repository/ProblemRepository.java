@@ -35,4 +35,5 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
                         ORDER BY p.createdDate DESC
                         """)
         Page<Problem> findActiveProblemsPageable(Pageable pageable);
+        void deleteByUser_UserId(Long userId);
 }
