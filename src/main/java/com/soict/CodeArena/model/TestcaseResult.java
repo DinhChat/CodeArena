@@ -17,6 +17,7 @@ public class TestcaseResult {
     @JoinColumn(name = "submission_id", nullable = false)
     private Submission submission;
     private Integer testcaseNumber;
+    @Column(columnDefinition = "LONGTEXT")
     private String input;
     private String expectedOutput;
     private String actualOutput;

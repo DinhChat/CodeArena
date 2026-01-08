@@ -7,7 +7,6 @@ import com.soict.CodeArena.request.SubmissionRequest;
 import com.soict.CodeArena.response.DefaultSubmissionResponse;
 import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.SubmissionDetailResponse;
-import com.soict.CodeArena.component.SubmissionQueue;
 import com.soict.CodeArena.response.SubmissionItemResponse;
 import com.soict.CodeArena.service.SubmissionService;
 import com.soict.CodeArena.service.UserService;
@@ -62,7 +61,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 submission.setCreatedBy(user);
                 submission.setCode(request.getCode());
                 submission.setLanguage(request.getLanguage().toUpperCase());
-                submission.setStatus(SUBMISSION_STATUS.PENDING);
+                submission.setStatus(SUBMISSION_STATUS.RUNNING);
                 submission.setSubmittedAt(LocalDateTime.now());
 
                 List<Testcase> testcases = testcaseRepository

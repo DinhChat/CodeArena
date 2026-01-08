@@ -16,7 +16,7 @@ public class Testcase {
     @ManyToOne
     @JoinColumn(name = "problem_id", nullable = false)
     private Problem problem;
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String input;
     @Column(columnDefinition = "TEXT", nullable = false)
     private String expectedOutput;
