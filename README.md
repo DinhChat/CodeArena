@@ -1,4 +1,6 @@
 # CodeArena
+Link API: [server.dinhchat.id.vn](https://server.dinhchat.id.vn)
+Link CodeSandbox service: [CodeSandbox](https://github.com/DinhChat/CodeSandbox.git)
 ## Cấu hình ban đầu mariadb để chạy code arena:
 phiên bản mariadb: 10.x
 mysql -u root -p => nhập mật khẩu root
