@@ -99,7 +99,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    public ProblemDetailResponse activeProblem(Long problemId, String username) throws Exception {
+    public ProblemDetailResponse toggleActiveProblem(Long problemId, String username) throws Exception {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Problem Not Found"));
@@ -109,7 +109,8 @@ public class ProblemServiceImpl implements ProblemService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can't activate this problem");
         }
 
-        problem.setActive(true);
+        boolean tmp = problem.isActive();
+        problem.setActive(!tmp);
         Problem updatedProblem = problemRepository.save(problem);
         return convertToResponse(updatedProblem);
     }

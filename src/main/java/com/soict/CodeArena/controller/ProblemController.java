@@ -77,12 +77,12 @@ public class ProblemController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @PutMapping("/active/{problemId}")
+    @PutMapping("/toggle-active/{problemId}")
     public ResponseEntity<ProblemDetailResponse> activateProblem(
             @PathVariable Long problemId,
             Authentication authentication) throws Exception {
         String username = authentication.getName();
-        ProblemDetailResponse problemDetailResponse = problemService.activeProblem(problemId, username);
+        ProblemDetailResponse problemDetailResponse = problemService.toggleActiveProblem(problemId, username);
         return new ResponseEntity<>(problemDetailResponse, HttpStatus.OK);
     }
 
