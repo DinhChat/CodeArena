@@ -1,5 +1,6 @@
 package com.soict.CodeArena.service.impl;
 
+import com.soict.CodeArena.component.JudgeExecutor;
 import com.soict.CodeArena.model.*;
 import com.soict.CodeArena.repository.*;
 import com.soict.CodeArena.request.SubmissionRequest;
@@ -30,8 +31,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         private final TestcaseRepository testcaseRepository;
         private final UserService userService;
         private final UserProblemStatRepository userProblemStatRepository;
-        private final SubmissionQueue submissionQueue;
-        private final TestcaseResultRepository testcaseResultRepository;
+        private final JudgeExecutor judgeExecutor;
 
 
         public SubmissionServiceImpl(
@@ -40,16 +40,14 @@ public class SubmissionServiceImpl implements SubmissionService {
                         TestcaseRepository testcaseRepository,
                         UserService userService,
                         UserProblemStatRepository userProblemStatRepository,
-                        SubmissionQueue submissionQueue,
-                        TestcaseResultRepository testcaseResultRepository
+                        JudgeExecutor judgeExecutor
                         ) {
                 this.submissionRepository = submissionRepository;
                 this.problemRepository = problemRepository;
                 this.testcaseRepository = testcaseRepository;
                 this.userService = userService;
                 this.userProblemStatRepository = userProblemStatRepository;
-                this.submissionQueue = submissionQueue;
-                this.testcaseResultRepository = testcaseResultRepository;
+                this.judgeExecutor = judgeExecutor;
         }
 
         @Override
@@ -73,7 +71,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 submission.setPassedTestcases(0);
 
                 Submission savedSubmission = submissionRepository.save(submission);
-                submissionQueue.addSubmission(savedSubmission.getSubmissionId());
+                judgeExecutor.runSubmission(savedSubmission.getSubmissionId());
                 return convertToResponse(savedSubmission);
         }
 
