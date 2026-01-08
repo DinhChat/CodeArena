@@ -1,15 +1,12 @@
 package com.soict.CodeArena.service.impl;
 
+import com.soict.CodeArena.component.JudgeExecutor;
 import com.soict.CodeArena.model.*;
-import com.soict.CodeArena.repository.ProblemRepository;
-import com.soict.CodeArena.repository.SubmissionRepository;
-import com.soict.CodeArena.repository.TestcaseRepository;
-import com.soict.CodeArena.repository.UserProblemStatRepository;
+import com.soict.CodeArena.repository.*;
 import com.soict.CodeArena.request.SubmissionRequest;
 import com.soict.CodeArena.response.DefaultSubmissionResponse;
 import com.soict.CodeArena.response.PagedResponse;
 import com.soict.CodeArena.response.SubmissionDetailResponse;
-import com.soict.CodeArena.component.SubmissionQueue;
 import com.soict.CodeArena.response.SubmissionItemResponse;
 import com.soict.CodeArena.service.SubmissionService;
 import com.soict.CodeArena.service.UserService;
@@ -33,7 +30,8 @@ public class SubmissionServiceImpl implements SubmissionService {
         private final TestcaseRepository testcaseRepository;
         private final UserService userService;
         private final UserProblemStatRepository userProblemStatRepository;
-        private final SubmissionQueue submissionQueue;
+        private final JudgeExecutor judgeExecutor;
+
 
         public SubmissionServiceImpl(
                         SubmissionRepository submissionRepository,
@@ -41,17 +39,18 @@ public class SubmissionServiceImpl implements SubmissionService {
                         TestcaseRepository testcaseRepository,
                         UserService userService,
                         UserProblemStatRepository userProblemStatRepository,
-                        SubmissionQueue submissionQueue) {
+                        JudgeExecutor judgeExecutor
+                        ) {
                 this.submissionRepository = submissionRepository;
                 this.problemRepository = problemRepository;
                 this.testcaseRepository = testcaseRepository;
                 this.userService = userService;
                 this.userProblemStatRepository = userProblemStatRepository;
-                this.submissionQueue = submissionQueue;
+                this.judgeExecutor = judgeExecutor;
         }
 
         @Override
-        public SubmissionDetailResponse submitSolution(SubmissionRequest request, String username) throws Exception {
+        public SubmissionDetailResponse submitSolution(SubmissionRequest request, String username) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
                 Problem problem = problemRepository.findById(request.getProblemId())
                                 .orElseThrow(() -> new ResponseStatusException(
@@ -62,7 +61,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 submission.setCreatedBy(user);
                 submission.setCode(request.getCode());
                 submission.setLanguage(request.getLanguage().toUpperCase());
-                submission.setStatus(SUBMISSION_STATUS.PENDING);
+                submission.setStatus(SUBMISSION_STATUS.RUNNING);
                 submission.setSubmittedAt(LocalDateTime.now());
 
                 List<Testcase> testcases = testcaseRepository
@@ -71,12 +70,12 @@ public class SubmissionServiceImpl implements SubmissionService {
                 submission.setPassedTestcases(0);
 
                 Submission savedSubmission = submissionRepository.save(submission);
-                submissionQueue.addSubmission(savedSubmission.getSubmissionId());
+                judgeExecutor.runSubmission(savedSubmission.getSubmissionId());
                 return convertToResponse(savedSubmission);
         }
 
         @Override
-        public SubmissionDetailResponse getSubmissionById(Long submissionId, String username) throws Exception {
+        public SubmissionDetailResponse getSubmissionById(Long submissionId, String username) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
                 Submission submission = submissionRepository.findById(submissionId)
                                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -89,12 +88,8 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         @Override
         public PagedResponse<DefaultSubmissionResponse> getMySubmissions(String username, Integer page,
-                        Integer pageSize, Integer offset) throws Exception {
+                        Integer pageSize, Integer offset) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
-                if (user == null) {
-                        throw new IllegalStateException("Authenticated user not found");
-                }
-
                 int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
                 int actualPage;
 
@@ -126,7 +121,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         @Override
         public PagedResponse<SubmissionItemResponse> getSubmissionsByUserAndProblem(String username, Long problemId,
-                        Integer page, Integer pageSize, Integer offset) throws Exception {
+                        Integer page, Integer pageSize, Integer offset) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
 
                 int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
@@ -167,6 +162,15 @@ public class SubmissionServiceImpl implements SubmissionService {
                                 submissionPage.isFirst());
         }
 
+        @Override
+        public void deleteSubmission(Long submissionId) {
+                Submission submission = submissionRepository.findById(submissionId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Submission Not Found"));
+                userProblemStatRepository.deleteBySubmission_SubmissionId(submissionId);
+                submissionRepository.delete(submission);
+        }
+
         private SubmissionDetailResponse convertToResponse(Submission submission) {
                 SubmissionDetailResponse response = new SubmissionDetailResponse();
                 response.setSubmissionId(submission.getSubmissionId());
@@ -174,6 +178,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 response.setProblemTitle(submission.getProblem().getTitle());
                 response.setUsername(submission.getCreatedBy().getUsername());
                 response.setLanguage(submission.getLanguage());
+                response.setCode(submission.getCode());
                 response.setStatus(submission.getStatus());
                 response.setExecutionTime(submission.getExecutionTime());
                 response.setMemoryUsed(submission.getMemoryUsed());

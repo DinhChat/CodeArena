@@ -12,12 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -61,13 +62,15 @@ public class JudgeExecutor {
         return testcaseResult;
     }
 
+    @Async
+    @Transactional
     public void runSubmission(Long submissionId) {
-        Submission submission = submissionRepository.findById(submissionId).orElse(null);
-        if (submission == null)
-            return;
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow();
 
         submission.setStatus(SUBMISSION_STATUS.RUNNING);
-        submissionRepository.save(submission);
+        submissionRepository.saveAndFlush(submission);
+
         List<TestcaseResult> testcaseResults = new ArrayList<>();
 
         try {
@@ -89,7 +92,6 @@ public class JudgeExecutor {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
             HttpEntity<SubmissionPayload> entity = new HttpEntity<>(payload, headers);
 
@@ -109,26 +111,20 @@ public class JudgeExecutor {
                 submission.setTotalTestcases(meta.getTotalTestCases());
 
                 for (SandboxResponse.TestcaseResultResponse res : results) {
-                    TestcaseResult testcaseResult = createTestcaseResult(res, submission);
-                    testcaseResults.add(testcaseResult);
+                    testcaseResults.add(createTestcaseResult(res, submission));
                 }
 
                 submission.setExecutionTime(
-                        (int) results.stream()
-                                .mapToDouble(r -> r.getTimeTaken() != null
-                                        ? r.getTimeTaken()
-                                        : 0)
+                        results.stream()
+                                .mapToInt(r -> r.getTimeTaken() != null ? r.getTimeTaken().intValue() : 0)
                                 .sum());
 
                 submission.setMemoryUsed(
                         results.stream()
-                                .mapToInt(r -> r.getMemoryUsed() != null
-                                        ? r.getMemoryUsed()
-                                        : 0)
+                                .mapToInt(r -> r.getMemoryUsed() != null ? r.getMemoryUsed() : 0)
                                 .max()
                                 .orElse(0));
 
-                submission.setErrorMessage(meta.getCompilationError());
                 submission.setStatus(
                         meta.getAllPassed()
                                 ? SUBMISSION_STATUS.ACCEPTED
@@ -144,10 +140,10 @@ public class JudgeExecutor {
         }
 
         submission.setJudgedAt(LocalDateTime.now());
-        submissionRepository.save(submission);
+        submissionRepository.saveAndFlush(submission);
 
-        testcaseResults.forEach(tr -> tr.setSubmission(submission));
-        testcaseResultRepository.saveAll(testcaseResults);
+        testcaseResultRepository.saveAllAndFlush(testcaseResults);
+
         userProblemStatService.updateStatAfterJudging(submission);
     }
 }

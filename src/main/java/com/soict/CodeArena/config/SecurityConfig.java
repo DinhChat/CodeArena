@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home").permitAll()
+                        .requestMatchers("/", "/index.html").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/problems/**").hasAnyAuthority("ADMIN", "USER", "MANAGER")
                         .requestMatchers("/testcases/**").hasAnyAuthority("ADMIN", "MANAGER", "USER")

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @CrossOrigin
@@ -25,7 +26,7 @@ public class ProblemController {
     @PostMapping
     public ResponseEntity<ProblemDetailResponse> createProblem(
             @RequestBody ProblemRequest request,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         ProblemDetailResponse response = problemService.createProblem(request, username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -35,7 +36,7 @@ public class ProblemController {
     public ResponseEntity<ProblemDetailResponse> updateProblem(
             @PathVariable Long problemId,
             @RequestBody ProblemRequest request,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         ProblemDetailResponse response = problemService.updateProblem(problemId, request, username);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -58,7 +59,7 @@ public class ProblemController {
             Authentication authentication,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) Integer offset) throws Exception {
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         String username = authentication.getName();
         PagedResponse<DefaultProblemResponse> responses = problemService.getMyProblems(username, page, pageSize,
                 offset);
@@ -70,7 +71,7 @@ public class ProblemController {
             Authentication authentication,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
-            @RequestParam(required = false) Integer offset) throws Exception {
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         String username = authentication.getName();
         PagedResponse<ProblemItemResponse> responses = problemService.getActiveProblems(username, page, pageSize,
                 offset);
@@ -80,7 +81,7 @@ public class ProblemController {
     @PutMapping("/toggle-active/{problemId}")
     public ResponseEntity<ProblemDetailResponse> activateProblem(
             @PathVariable Long problemId,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         ProblemDetailResponse problemDetailResponse = problemService.toggleActiveProblem(problemId, username);
         return new ResponseEntity<>(problemDetailResponse, HttpStatus.OK);
@@ -89,9 +90,22 @@ public class ProblemController {
     @DeleteMapping("/{problemId}")
     public ResponseEntity<String> deleteProblem(
             @PathVariable Long problemId,
-            Authentication authentication) throws Exception {
+            Authentication authentication) throws ResponseStatusException {
         String username = authentication.getName();
         problemService.deleteProblem(problemId, username);
         return new ResponseEntity<>("Problem deleted successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/class/{adminId}")
+    public ResponseEntity<PagedResponse<ProblemItemResponse>> getProblemOfAdmin(
+            @PathVariable Long adminId,
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize,
+            @RequestParam(required = false) Integer offset) throws ResponseStatusException {
+        String username = authentication.getName();
+        PagedResponse<ProblemItemResponse> responses = problemService.getAllProblemsOfAdmin(adminId, username, page, pageSize,
+                offset);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 }

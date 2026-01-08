@@ -58,7 +58,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(
             @RequestBody LoginRequest loginRequest
-    ) throws Exception {
+    ) throws ResponseStatusException {
         User user = userService.loginUser(loginRequest);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(

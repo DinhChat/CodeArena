@@ -12,6 +12,7 @@ public class SubmissionDetailResponse {
     private String problemTitle;
     private String username;
     private String language;
+    private String code;
     private SUBMISSION_STATUS status;
     private Integer executionTime;
     private Integer memoryUsed;
