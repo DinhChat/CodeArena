@@ -43,13 +43,13 @@ public class ProblemController {
     }
 
     @GetMapping("/{problemId}")
-    public ResponseEntity<ProblemDetailResponse> getProblemById(@PathVariable Long problemId) throws Exception {
+    public ResponseEntity<ProblemDetailResponse> getProblemById(@PathVariable Long problemId) throws ResponseStatusException {
         ProblemDetailResponse response = problemService.getProblemById(problemId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/code/{problemCode}")
-    public ResponseEntity<ProblemDetailResponse> getProblemByCode(@PathVariable String problemCode) throws Exception {
+    public ResponseEntity<ProblemDetailResponse> getProblemByCode(@PathVariable String problemCode) throws ResponseStatusException {
         ProblemDetailResponse response = problemService.getProblemByCode(problemCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

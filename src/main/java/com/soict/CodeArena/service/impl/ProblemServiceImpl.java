@@ -273,8 +273,8 @@ public class ProblemServiceImpl implements ProblemService {
         response.setDescription(problem.getDescription());
         response.setInputFormat(problem.getInputFormat());
         response.setOutputFormat(problem.getOutputFormat());
-        response.setSampleInput(response.getSampleInput());
-        response.setSampleOutput(response.getSampleOutput());
+        response.setSampleInput(problem.getSampleInput());
+        response.setSampleOutput(problem.getSampleOutput());
         response.setConstraints(problem.getConstraints());
         response.setDifficultyLevel(problem.getDifficultyLevel());
         response.setTimeLimit(problem.getTimeLimit());
