@@ -12,8 +12,7 @@ public interface ProblemService {
 
     ProblemDetailResponse updateProblem(Long problemId, ProblemRequest request, String username) throws ResponseStatusException;
 
-
-    ProblemDetailResponse activeProblem(Long problemId, String username) throws ResponseStatusException;
+    ProblemDetailResponse toggleActiveProblem(Long problemId, String username) throws ResponseStatusException;
 
     ProblemDetailResponse getProblemById(Long problemId) throws ResponseStatusException;
 

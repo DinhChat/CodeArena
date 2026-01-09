@@ -52,6 +52,7 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = new Problem();
         problem.setProblemCode(request.getProblemCode());
         problem.setTitle(request.getTitle());
+        problem.setProblemCode(request.getProblemCode());
         problem.setDescription(request.getDescription());
         problem.setInputFormat(request.getInputFormat());
         problem.setOutputFormat(request.getOutputFormat());
@@ -83,6 +84,7 @@ public class ProblemServiceImpl implements ProblemService {
         }
 
         problem.setTitle(request.getTitle());
+        problem.setProblemCode(request.getProblemCode());
         problem.setDescription(request.getDescription());
         problem.setInputFormat(request.getInputFormat());
         problem.setOutputFormat(request.getOutputFormat());
@@ -101,7 +103,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
 
-    public ProblemDetailResponse activeProblem(Long problemId, String username) throws ResponseStatusException {
+    public ProblemDetailResponse toggleActiveProblem(Long problemId, String username) throws ResponseStatusException {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Problem Not Found"));
@@ -116,6 +118,7 @@ public class ProblemServiceImpl implements ProblemService {
         Problem updatedProblem = problemRepository.save(problem);
         return convertToResponse(updatedProblem);
     }
+
 
     @Override
     public ProblemDetailResponse getProblemById(Long problemId) {
