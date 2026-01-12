@@ -22,4 +22,10 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findByProblem_ProblemIdAndCreatedBy_UserIdOrderBySubmittedAtDesc(Long problemId, Long userId);
 
     void deleteByProblem_ProblemId(Long problemId);
+
+    Page<Submission> findByCreatedBy_UserIdAndProblem_CreatedBy_UserId(
+            Long userId,
+            Long adminId,
+            Pageable pageable
+    );
 }

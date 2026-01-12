@@ -33,7 +33,7 @@ public class Submission {
     private SUBMISSION_STATUS status = SUBMISSION_STATUS.PENDING;
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
-    private Integer executionTime;
+    private Double executionTime;
     private Integer memoryUsed;
     private Integer passedTestcases;
     private Integer totalTestcases;

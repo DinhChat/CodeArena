@@ -116,7 +116,7 @@ public class JudgeExecutor {
 
                 submission.setExecutionTime(
                         results.stream()
-                                .mapToInt(r -> r.getTimeTaken() != null ? r.getTimeTaken().intValue() : 0)
+                                .mapToDouble(r -> r.getTimeTaken() != null ? r.getTimeTaken() : 0)
                                 .sum());
 
                 submission.setMemoryUsed(

@@ -41,14 +41,15 @@ public class SubmissionController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/user")
+    @GetMapping("/user/{adminId}")
     public ResponseEntity<PagedResponse<DefaultSubmissionResponse>> getAllMySubmissions(
             Authentication authentication,
+            @PathVariable Long adminId,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize,
             @RequestParam(required = false) Integer offset) throws ResponseStatusException {
         String username = authentication.getName();
-        PagedResponse<DefaultSubmissionResponse> responses = submissionService.getMySubmissions(username, page,
+        PagedResponse<DefaultSubmissionResponse> responses = submissionService.getMySubmissions(username, adminId, page,
                 pageSize, offset);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }

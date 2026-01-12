@@ -14,7 +14,7 @@ public class SubmissionDetailResponse {
     private String language;
     private String code;
     private SUBMISSION_STATUS status;
-    private Integer executionTime;
+    private Double executionTime;
     private Integer memoryUsed;
     private String errorMessage;
     private Integer passedTestcases;

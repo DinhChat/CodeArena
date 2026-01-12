@@ -87,7 +87,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         }
 
         @Override
-        public PagedResponse<DefaultSubmissionResponse> getMySubmissions(String username, Integer page,
+        public PagedResponse<DefaultSubmissionResponse> getMySubmissions(String username, Long adminId, Integer page,
                         Integer pageSize, Integer offset) throws ResponseStatusException {
                 User user = userService.findByUsername(username);
                 int actualPageSize = (pageSize != null && pageSize > 0) ? pageSize : 10;
@@ -103,7 +103,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
                 Pageable pageable = PageRequest.of(actualPage, actualPageSize, Sort.by("submittedAt").descending());
                 Page<Submission> submissionPage = submissionRepository
-                                .findByCreatedBy_UserId(user.getUserId(), pageable);
+                                .findByCreatedBy_UserIdAndProblem_CreatedBy_UserId(user.getUserId(), adminId, pageable);
 
                 List<DefaultSubmissionResponse> responses = submissionPage.getContent().stream()
                                 .map(this::convertToDefaultResponse)

@@ -13,7 +13,7 @@ public class SubmissionItemResponse {
     private SUBMISSION_STATUS status;
     private Integer passedTestcases;
     private Integer totalTestcases;
-    private Integer executionTime;
+    private Double executionTime;
     private Integer memoryUsed;
     private boolean selected;
 }
