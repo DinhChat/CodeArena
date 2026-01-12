@@ -197,6 +197,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 return new SubmissionItemResponse(
                                 submission.getSubmissionId(),
                                 submission.getStatus(),
+                                submission.getLanguage(),
                                 submission.getPassedTestcases(),
                                 submission.getTotalTestcases(),
                                 submission.getExecutionTime(),

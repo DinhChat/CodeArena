@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class SubmissionItemResponse {
     private Long submissionId;
     private SUBMISSION_STATUS status;
+    private String language;
     private Integer passedTestcases;
     private Integer totalTestcases;
     private Double executionTime;
